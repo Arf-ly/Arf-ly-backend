@@ -40,22 +40,16 @@ public class FirebaseService {
     public PhoneAuthInfoDto verifyTokenAndGetInfo(String token) {
         try {
             // 토큰 확인 및 형식 검증
-            if (token == null || !token.startsWith("Bearer ")) {
-                throw new InvalidTokenException();
-            }
-
-            // Bearer 제거
-            String idToken = token.substring(7);
-            if (idToken.isBlank()) {
+            if (token == null || token.isBlank()) {
                 throw new EmptyTokenException();
             }
 
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
 
             String uid = decodedToken.getUid();
             String phoneNumber = (String) decodedToken.getClaims().get("phone_number");
 
-            if (uid == null || uid.isBlank()||phoneNumber == null || phoneNumber.isBlank()) {
+            if (uid == null || uid.isBlank() || phoneNumber == null || phoneNumber.isBlank()) {
                 throw new MissingTokenException();
             }
 
@@ -73,8 +67,8 @@ public class FirebaseService {
 
 
     //여러 건의 알림을 리스트로 받아 실제 푸시 알림을 발송
-    public Set<Long> sendAllNotifications(List<MedicationAlarmDto> alarmList){
-        if(alarmList == null || alarmList.isEmpty()){
+    public Set<Long> sendAllNotifications(List<MedicationAlarmDto> alarmList) {
+        if (alarmList == null || alarmList.isEmpty()) {
             return Collections.emptySet();
         }
         //  일괄 전송을 위한 MessageList 생성
@@ -88,27 +82,29 @@ public class FirebaseService {
                         .build())
                 .toList();
         Set<Long> failedTokenSet = new HashSet<>();
-        try{
+        try {
             // 일괄 전송
             BatchResponse response = firebaseMessaging.sendEach(messages);
 
             //발송 결과 처리
-            for(int i =0; i<response.getResponses().size();i++){
+            for (int i = 0; i < response.getResponses().size(); i++) {
                 SendResponse sendResponse = response.getResponses().get(i);
                 MedicationAlarmDto alarm = alarmList.get(i);
 
-                if(sendResponse.isSuccessful()){
-                    log.debug("알림 발송 성공 - Target: {}, Title:{}",alarm.token(),alarm.title());
+                if (sendResponse.isSuccessful()) {
+                    log.debug("알림 발송 성공 - Target: {}, Title:{}", alarm.token(), alarm.title());
                 }//실패한 경우 Set에 추가
-                else{
+                else {
                     FirebaseMessagingException exception = sendResponse.getException();
                     MessagingErrorCode errorCode = exception.getMessagingErrorCode();
-                    if(errorCode == MessagingErrorCode.UNREGISTERED || errorCode == MessagingErrorCode.INVALID_ARGUMENT){
-                        log.warn("알림 발송 실패 - ErrorCode:{}, Target: {}, Title:{}",errorCode,alarm.token(),alarm.title());
+                    if (errorCode == MessagingErrorCode.UNREGISTERED
+                            || errorCode == MessagingErrorCode.INVALID_ARGUMENT) {
+                        log.warn("알림 발송 실패 - ErrorCode:{}, Target: {}, Title:{}", errorCode, alarm.token(),
+                                alarm.title());
                         failedTokenSet.add(alarm.fcmTokenId());
-                    }
-                    else{// 네트워크 문제 혹은 파이어베이스 서버 임시 점검인 경우
-                        log.error("알림 발송 실패(SERVER_ERROR): Token: {}, Title: {}", alarm.token(), alarm.title(), exception);
+                    } else {// 네트워크 문제 혹은 파이어베이스 서버 임시 점검인 경우
+                        log.error("알림 발송 실패(SERVER_ERROR): Token: {}, Title: {}", alarm.token(), alarm.title(),
+                                exception);
                         failedTokenSet.add(alarm.fcmTokenId());
                     }
                 }
@@ -116,16 +112,16 @@ public class FirebaseService {
 
             }
             //일괄 전송 실패 시 모든 FCM Token 반납
-        }catch (FirebaseMessagingException e){
-            log.error("FCM 일괄 발송 중 에러 발생",e);
+        } catch (FirebaseMessagingException e) {
+            log.error("FCM 일괄 발송 중 에러 발생", e);
             return alarmList.stream().map(MedicationAlarmDto::fcmTokenId).collect(Collectors.toSet());
         }
 
-        return  failedTokenSet;
+        return failedTokenSet;
     }
 
     // 댓글에서 언급 기능을 통해 실제 푸시 알람을 발송
-    public Set<Long> sendAllMentionNotifications(Post post, Member commenter, List<FcmToken> fcmTokens){
+    public Set<Long> sendAllMentionNotifications(Post post, Member commenter, List<FcmToken> fcmTokens) {
         //  일괄 전송을 위한 MessageList 생성
         List<Message> messages = fcmTokens.stream()
                 .map(token -> Message.builder()
@@ -137,24 +133,26 @@ public class FirebaseService {
                         .build())
                 .collect(Collectors.toList());
         Set<Long> failedTokenSet = new HashSet<>();
-        try{
+        try {
             // 일괄 전송
             BatchResponse response = firebaseMessaging.sendEach(messages);
 
             //발송 결과 처리
-            for(int i =0; i<response.getResponses().size();i++){
+            for (int i = 0; i < response.getResponses().size(); i++) {
                 SendResponse sendResponse = response.getResponses().get(i);
                 FcmToken token = fcmTokens.get(i);
-                if(sendResponse.isSuccessful()){
-                    log.debug("댓글 푸시 알람 발송 성공 - Target: {}",token.getToken());
+                if (sendResponse.isSuccessful()) {
+                    log.debug("댓글 푸시 알람 발송 성공 - Target: {}", token.getToken());
                 }//실패한 경우 Set에 추가
-                else{
+                else {
                     FirebaseMessagingException exception = sendResponse.getException();
                     MessagingErrorCode errorCode = exception.getMessagingErrorCode();
                     String errorMessage = exception.getMessage();
 
-                    if (errorCode == MessagingErrorCode.UNREGISTERED || errorCode == MessagingErrorCode.INVALID_ARGUMENT) {
-                        log.warn("알림 발송 실패 - ErrorCode:{}, Token: {}, Error: {}", errorCode, token.getToken(), errorMessage);
+                    if (errorCode == MessagingErrorCode.UNREGISTERED
+                            || errorCode == MessagingErrorCode.INVALID_ARGUMENT) {
+                        log.warn("알림 발송 실패 - ErrorCode:{}, Token: {}, Error: {}", errorCode, token.getToken(),
+                                errorMessage);
                         failedTokenSet.add(token.getId());
                     } else {
                         log.error("알림 발송 실패(SERVER_ERROR): Token: {}, Error: {}", token.getToken(), errorMessage);
@@ -165,12 +163,12 @@ public class FirebaseService {
 
             }
             //일괄 전송 실패 시 모든 FCM Token 반납
-        }catch (FirebaseMessagingException e){
-            log.error("FCM 일괄 발송 중 에러 발생",e);
+        } catch (FirebaseMessagingException e) {
+            log.error("FCM 일괄 발송 중 에러 발생", e);
             return fcmTokens.stream().map(FcmToken::getId).collect(Collectors.toSet());
         }
 
-        return  failedTokenSet;
+        return failedTokenSet;
     }
 
 }
