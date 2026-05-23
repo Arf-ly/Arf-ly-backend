@@ -2,6 +2,7 @@ package com.capstone.arfly.member.controller;
 
 import com.capstone.arfly.common.auth.JwtTokenUtil;
 import com.capstone.arfly.common.exception.ErrorResponse;
+import com.capstone.arfly.common.service.FirebaseService;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.domain.SocialType;
 import com.capstone.arfly.member.dto.AccessTokenRequestDto;
@@ -24,7 +25,6 @@ import com.capstone.arfly.member.dto.RedirectDto;
 import com.capstone.arfly.member.dto.TokenResponseDto;
 import com.capstone.arfly.member.dto.UserIdResponseDto;
 import com.capstone.arfly.member.service.AuthService;
-import com.capstone.arfly.common.service.FirebaseService;
 import com.capstone.arfly.member.service.GoogleService;
 import com.capstone.arfly.member.service.KakaoService;
 import com.capstone.arfly.member.service.NaverService;
@@ -271,7 +271,7 @@ public class AuthController {
 
     @Operation(
             summary = "토큰 검사 및 전화번호 중복 검사",
-            description = "파이어베이스에서 추출한 토큰이 맞는지 검증하고, 토큰에 포함된 전화번호의 중복 여부를 확인. 헤더의 Bearer 토큰이 필수."
+            description = "파이어베이스에서 추출한 토큰이 맞는지 검증하고, 토큰에 포함된 전화번호의 중복 여부를 확인. 헤더의 X-FirebaseToken 필수."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -295,8 +295,8 @@ public class AuthController {
     })
     @PostMapping("/phone/verify")
     public ResponseEntity<Void> verifyPhoneNumber(
-            @Parameter(name = "Authorization", description = "Bearer {Firebase_Token}", required = true)
-            @RequestHeader("Authorization") String token) {
+            @Parameter(name = "X-FirebaseToken", description = "{Firebase_Token}", required = true)
+            @RequestHeader("X-FirebaseToken") String token) {
         // 토큰 검증 및 유저 정보 추출
         PhoneAuthInfoDto phoneAuthInfo = firebaseService.verifyTokenAndGetInfo(token);
 
@@ -333,8 +333,8 @@ public class AuthController {
     })
     @PostMapping("/id/find")
     public ResponseEntity<?> findUserId(
-            @Parameter(name = "Authorization", description = "Bearer {Firebase_Token}", required = true)
-            @RequestHeader("Authorization") String token) {
+            @Parameter(name = "X-FirebaseToken", description = "{Firebase_Token}", required = true)
+            @RequestHeader("X-FirebaseToken") String token) {
         //토큰 검증 및 유저 정보 추출
         PhoneAuthInfoDto phoneAuthInfoDto = firebaseService.verifyTokenAndGetInfo(token);
 
@@ -373,8 +373,8 @@ public class AuthController {
     )
     @PostMapping("/password/verify")
     public ResponseEntity<?> verifyUserForPasswordReset(
-            @Parameter(name = "Authorization", description = "Bearer {Firebase_Token}", required = true)
-            @RequestHeader("Authorization") String token,
+            @Parameter(name = "X-FirebaseToken", description = "{Firebase_Token}", required = true)
+            @RequestHeader("X-FirebaseToken") String token,
             @RequestBody PasswordRequestDto passwordRequestDto
     ) {
         //토큰 검증 및 유저 정보 추출
