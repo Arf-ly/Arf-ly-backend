@@ -4,6 +4,7 @@ import com.capstone.arfly.common.exception.BusinessException;
 import com.capstone.arfly.common.exception.ErrorCode;
 import com.capstone.arfly.hospital.dto.HospitalDetailResponse;
 import com.capstone.arfly.hospital.dto.HospitalListResponse;
+import com.capstone.arfly.hospital.dto.HospitalListUserResponse;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.repository.MemberRepository;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -50,10 +51,11 @@ public class HospitalService {
             "places.regularOpeningHours";
 
     // 주변 병원 리스트 가져오기
-    public List<HospitalListResponse> getHospitalList(Long userId){
+    public HospitalListUserResponse getHospitalList(Long userId){
         Member member = memberRepository.findById(userId).orElseThrow(()->new BusinessException(ErrorCode.USER_NOT_EXISTS));
         Double latitude = member.getLatitude();
         Double longitude = member.getLongitude();
+        String roadAddress = member.getRoad_address();
 
         List<HospitalListResponse> hospitalList = new ArrayList<>();
 
@@ -85,7 +87,12 @@ public class HospitalService {
             throw new BusinessException(ErrorCode.GOOGLE_MAP_ERROR);
         }
 
-        return hospitalList;
+        return HospitalListUserResponse.builder()
+                .latitude(latitude)
+                .longitude(longitude)
+                .roadAddress(roadAddress)
+                .hospitals(hospitalList)
+                .build();
     }
 
     // 장소 사진 함수
