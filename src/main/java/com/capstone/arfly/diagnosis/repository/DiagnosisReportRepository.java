@@ -1,5 +1,6 @@
 package com.capstone.arfly.diagnosis.repository;
 
+import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.pet.domain.Pet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.capstone.arfly.diagnosis.domain.DiagnosisReport;
@@ -27,4 +28,7 @@ public interface DiagnosisReportRepository extends JpaRepository<DiagnosisReport
     );
 
     Optional<DiagnosisReport> findByPet(Pet pet);
+
+    @Query("SELECT COUNT(d) FROM DiagnosisReport d WHERE d.pet.member = :member")
+    Long countByMember(Member member);
 }

@@ -2,6 +2,10 @@ package com.capstone.arfly.member.service;
 
 import com.capstone.arfly.common.exception.BusinessException;
 import com.capstone.arfly.common.exception.ErrorCode;
+import com.capstone.arfly.community.repository.CommentRepository;
+import com.capstone.arfly.community.repository.PostLikeRepository;
+import com.capstone.arfly.community.repository.PostRepository;
+import com.capstone.arfly.diagnosis.repository.DiagnosisReportRepository;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.dto.UserIdCheckRequestDto;
@@ -20,6 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DiagnosisReportRepository diagnosisReportRepository;
+    private final PostRepository postRepository;
+    private final PostLikeRepository postLikeRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional(readOnly = true)
     public boolean isUsernameAvailable(UserNameCheckRequestDto userNameCheckRequestDto) {
@@ -48,6 +56,14 @@ public class MemberService {
 
         boolean isDoctor = Role.DOCTOR.equals(member.getRole());
 
+        Long diagnosisCounts = diagnosisReportRepository.countByMember(member);
+
+        Long postCounts = postRepository.countByMember(member);
+
+        Long commentCounts = commentRepository.countByMember(member);
+
+        Long likeCounts = postLikeRepository.countByMember(member);
+
         return UserProfileResponse.builder()
                 .userId(member.getId())
                 .nickname(member.getNickName())
@@ -57,6 +73,10 @@ public class MemberService {
                 .latitude(member.getLatitude())
                 .longitude(member.getLongitude())
                 .roadAddress(member.getRoad_address())
+                .diagnosisCounts(diagnosisCounts)
+                .postCounts(postCounts)
+                .commentCounts(commentCounts)
+                .likeCounts(likeCounts)
                 .build();
 
     }

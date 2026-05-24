@@ -1,6 +1,7 @@
 package com.capstone.arfly.community.repository;
 
 import com.capstone.arfly.community.domain.PostLike;
+import com.capstone.arfly.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,6 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM PostLike p WHERE p.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
+
+    Long countByMember(Member member);
 }
