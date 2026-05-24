@@ -3,6 +3,7 @@ package com.capstone.arfly.hospital.controller;
 import com.capstone.arfly.common.exception.ErrorResponse;
 import com.capstone.arfly.hospital.dto.HospitalDetailResponse;
 import com.capstone.arfly.hospital.dto.HospitalListResponse;
+import com.capstone.arfly.hospital.dto.HospitalListUserResponse;
 import com.capstone.arfly.hospital.service.HospitalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,7 +37,7 @@ public class HospitalController {
 
     private final HospitalService hospitalService;
 
-    @Operation(summary = "지도 리스트 조회", description = "사용자가 설정한 위치의 주변 10개의 동물병원을 가져온다.")
+    @Operation(summary = "지도 리스트 조회", description = "사용자가 설정한 위치의 주변 10개의 동물병원 및 사용자 위치정보를 가져온다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "병원 리스트 가져오기 성공"),
             @ApiResponse(responseCode = "500", description = "구글 api 문제",
@@ -53,7 +54,7 @@ public class HospitalController {
             )
     })
     @GetMapping("/maps")
-    public ResponseEntity<List<HospitalListResponse>> getHospitals(
+    public ResponseEntity<HospitalListUserResponse> getHospitals(
             @AuthenticationPrincipal UserDetails userDetails
     ){
         Long userId = Long.parseLong(userDetails.getUsername());
