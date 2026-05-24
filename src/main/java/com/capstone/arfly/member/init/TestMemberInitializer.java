@@ -28,6 +28,9 @@ public class TestMemberInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
+        if (memberRepository.findByUserId(userId).isPresent()) {
+            return;
+        }
         Member testMember1 = Member.builder().
                 userId(userId)
                 .password(passwordEncoder.encode(userPassword))

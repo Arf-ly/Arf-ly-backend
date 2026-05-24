@@ -38,15 +38,6 @@ spring:
       max-file-size: 100MB # 비디오를 고려한 파일 최대 크기
       max-request-size: 100MB # 한번의 요청에 담을 수 있는 크기
 
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          time_zone: Asia/Seoul
 
 
 jwt:
