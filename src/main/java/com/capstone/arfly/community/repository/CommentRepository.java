@@ -3,6 +3,8 @@ package com.capstone.arfly.community.repository;
 import com.capstone.arfly.community.domain.Comment;
 import com.capstone.arfly.community.dto.CommentDetailResponseDto;
 import java.util.List;
+
+import com.capstone.arfly.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +31,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Comment c WHERE c.post.id = :postId")
     void deleteByPostId(@Param("postId") Long postId);
+
+    Long countByMember(Member member);
 }

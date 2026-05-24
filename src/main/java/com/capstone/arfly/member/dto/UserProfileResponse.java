@@ -34,4 +34,16 @@ public class UserProfileResponse {
     @Schema(description = "도로명 주소", example = "경북 경산시 ~")
     private String roadAddress;
 
+    @Schema(description = "진단 기록 갯수", example = "6")
+    private Long diagnosisCounts;
+
+    @Schema(description = "게시글 갯수", example = "1")
+    private Long postCounts;
+
+    @Schema(description = "댓글 수", example = "2")
+    private Long commentCounts;
+
+    @Schema(description = "좋아요 수", example = "3")
+    private Long likeCounts;
+
 }
