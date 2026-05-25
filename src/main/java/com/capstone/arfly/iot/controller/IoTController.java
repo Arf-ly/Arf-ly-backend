@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "IoT", description = "IoT 기기 통신 및 센서 처리 API")
@@ -19,9 +21,10 @@ public class IoTController {
 
     @Operation(summary = "기기 등록", description = "피코의 UID를 받아 회원과 매핑합니다.")
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody IoTRequestDto.Register request) {
+    public ResponseEntity<Void> register(@RequestBody IoTRequestDto.Register request, @AuthenticationPrincipal UserDetails userDetails) {
         // 프론트엔드가 보낸 memberId와 deviceUid를 서비스로 전달
-        iotService.registerDevice(request.getMemberId(), request.getDeviceUid());
+        Long memberId = Long.parseLong(userDetails.getUsername());
+        iotService.registerDevice( memberId,request.getDeviceUid());
         return ResponseEntity.ok().build();
     }
 
