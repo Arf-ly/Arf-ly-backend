@@ -56,4 +56,9 @@ public class WalkRecord extends BaseCreatedEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id")
     private Pet pet;
+
+    public void assignPet(Pet pet) {
+        this.pet = pet;
+        this.status = true;
+    }
 }

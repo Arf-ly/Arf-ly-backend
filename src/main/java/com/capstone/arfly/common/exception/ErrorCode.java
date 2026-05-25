@@ -47,7 +47,9 @@ public enum ErrorCode {
     EMPTY_TERMS_AGREEMENT(HttpStatus.BAD_REQUEST, "약관 동의 항목이 비어있습니다.", "EMPTY_TERMS_AGREEMENT"),
     INVALID_TERMS_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 약관 ID입니다.", "INVALID_TERMS_ID"),
 
-    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 진단 리포트가 없습니다.", "REPORT_NOT_FOUND");
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 진단 리포트가 없습니다.", "REPORT_NOT_FOUND"),
+
+    WALK_NOT_FOUND(HttpStatus.NOT_FOUND, "산책 기록을 찾을 수 없습니다.", "WALK_NOT_FOUND");
 
 
     //예외 상태 코드
