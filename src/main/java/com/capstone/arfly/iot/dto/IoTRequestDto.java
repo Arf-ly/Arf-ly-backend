@@ -13,6 +13,7 @@ public class IoTRequestDto {
     @Schema(description = "기기 최초 등록 요청")
     public static class Register {
         private Long memberId;
+        private String deviceUid;
     }
 
     @Getter

@@ -5,6 +5,7 @@ import com.capstone.arfly.common.exception.ErrorCode;
 import com.capstone.arfly.iot.domain.IoTDevice;
 import com.capstone.arfly.iot.dto.IoTRequestDto;
 import com.capstone.arfly.iot.repository.IoTDeviceRepository;
+import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.walkRecord.domain.WalkRecord;
 import com.capstone.arfly.walkRecord.repository.WalkRecordRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,48 +31,40 @@ public class IoTService {
 
     private final com.capstone.arfly.member.repository.MemberRepository memberRepository; // MemberRepository 주입 필요
 
-    public String registerDevice(IoTRequestDto.Register request) {
-        // 1. 회원 확인
-        com.capstone.arfly.member.domain.Member member = memberRepository.findById(request.getMemberId())
+    // IoTService.java
+    public void registerDevice(Long memberId, String deviceUid) {
+        // 1. 회원 확인 (로그인 유저 정보 활용)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
 
-        // 2. UID 생성 및 저장
-        String deviceUid = java.util.UUID.randomUUID().toString();
+        // 2. 피코가 이미 가지고 있던 그 UID를 DB에 그대로 저장! (생성하는 게 아니라 매핑하는 것)
         IoTDevice device = IoTDevice.builder()
                 .member(member)
-                .deviceUid(deviceUid)
+                .deviceUid(deviceUid) // 피코가 들고온 그 값을 그대로 저장
                 .build();
         iotDeviceRepository.save(device);
-
-        return deviceUid;
     }
-    public void uploadWalkData(IoTRequestDto.UploadWalk request) {
 
+    public void uploadWalkData(IoTRequestDto.UploadWalk request) {
+        // 피코가 보낸 deviceUid로 기기 조회
         IoTDevice device = iotDeviceRepository.findByDeviceUid(request.getDeviceUid())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEVICE_NOT_FOUND));
 
-        // 2. 피코가 보낸 records 배열을 순회하며 총 이동 거리(km) 직접 계산 (하버사인)
         double totalDistance = calculateTotalDistance(request.getRecords());
-
-        // 3. 가속도(ax, ay, az) 배열을 분석하여 활동량 점수 계산
         double activityScore = calculateActivityScore(request.getRecords());
 
-        // 4. 피코의 시간 문자열 포맷("December 0th, 2026", "17:00:00")을 LocalDateTime으로 변환
         LocalDateTime startDateTime = convertToLocalDateTime(request.getDate(), request.getStartTime());
         LocalDateTime endDateTime = convertToLocalDateTime(request.getDate(), request.getEndTime());
 
-        // 5. 핵심: walkRecord 도메인의 엔티티를 빌드하되, 계산된 값들을 쏙 집어넣음
-        // status는 기본값인 false(미배정)로 생성되며 pet은 null 상태
         WalkRecord walkRecord = WalkRecord.builder()
                 .startTime(startDateTime)
                 .endTime(endDateTime)
-                .totalDistance(totalDistance)   // ◀ 서버가 직접 구한 거리 값
-                .activityScore(activityScore)   // ◀ 서버가 직접 구한 점수 값
+                .totalDistance(totalDistance)
+                .activityScore(activityScore)
                 .device(device)
                 .member(device.getMember())
                 .build();
 
-        // 6. walkRecord 창고에 쾅 저장!
         walkRecordRepository.save(walkRecord);
     }
 
