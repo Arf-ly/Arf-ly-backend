@@ -217,7 +217,7 @@ public class AuthService {
             throw new UserNotExistsException();
         }
         Member member = findMember.get();
-        member.updatePassword(newPassword);
+        member.updatePassword(passwordEncoder.encode(newPassword));
     }
 
 
