@@ -27,13 +27,14 @@ public class IoTController {
         return ResponseEntity.ok(new IoTResponseDto.RegisterResult(deviceUid));
     }
 
-    @Operation(summary = "산책 데이터 일괄 업로드", description = "라즈베리파이 피코에서 모아둔 원본 JSON 배열 데이터를 전송받아 서버에서 직접 스코어링 및 거리 계산 후 미배정 기록을 만듭니다.")
+    @Operation(summary = "산책 데이터 일괄 업로드", description = "피코가 바디(JSON) 안에 deviceUid와 데이터를 함께 담아 보냅니다.")
     @PostMapping("/walks/upload")
     public ResponseEntity<Void> uploadWalks(
-            @RequestHeader("Authorization") String deviceUid,
+            // 💡 핵심: @RequestHeader 부분을 아예 삭제했습니다!
             @RequestBody IoTRequestDto.UploadWalk request) {
 
-        iotService.uploadWalkData(deviceUid, request);
+        // 서비스에게 request 상자를 통째로 던져줍니다.
+        iotService.uploadWalkData(request);
         return ResponseEntity.ok().build();
     }
 }

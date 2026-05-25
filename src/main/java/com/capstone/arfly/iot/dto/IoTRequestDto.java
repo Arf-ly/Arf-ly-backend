@@ -20,6 +20,9 @@ public class IoTRequestDto {
     @Schema(description = "라즈베리파이 피코 원본 산책 데이터 업로드 요청")
     public static class UploadWalk {
 
+        @Schema(description = "기기 식별용 고유 UID", example = "550e8400-...")
+        private String deviceUid;
+
         @JsonProperty("start_time")
         @Schema(description = "산책 시작 시간", example = "17:00:00")
         private String startTime;
