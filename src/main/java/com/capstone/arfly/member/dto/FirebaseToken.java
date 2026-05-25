@@ -12,22 +12,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Schema(description = "파이어베이스 인증 정보 DTO (UID 및 전화번호)")
+@Schema(description = "파이어베이스 토큰 DTO")
 public class FirebaseToken {
 
     @Schema(
-            description = "파이어베이스에서 추출한 사용자 고유 ID (sub)",
-            example = "ABC1234567890",
+            description = "파이어베이스 토큰 ",
+            example = "AJDJDHAKQUDNIDBDJQDUDNDIDBDKDJ",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NotBlank(message = "Firebase UID(tokenId)는 필수입니다.")
-    private String tokenId;
+    @NotBlank(message = "Firebase Token은 필수입니다!")
+    private String token;
 
-    @Schema(
-            description = "파이어베이스 토큰에서 추출한 인증된 전화번호",
-            example = "+821012345678",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotBlank(message = "전화번호 정보가 누락되었습니다.")
-    private String phoneNumber;
 }

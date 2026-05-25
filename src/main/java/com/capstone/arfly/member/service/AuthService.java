@@ -48,15 +48,15 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
-    public Member create(MemberCreateDto memberCreateDto) {
+    public Member create(MemberCreateDto memberCreateDto, PhoneAuthInfoDto phoneAuthInfoDto) {
         //중복 체크
         memberRepository.findByUserId(memberCreateDto.getUserId()).ifPresent(m -> {
             throw new UserAlreadyExistsException();
         });
 
         //토큰 정보 추출
-        String firebaseUid = memberCreateDto.getToken().getTokenId();
-        String phoneNumber = memberCreateDto.getToken().getPhoneNumber();
+        String firebaseUid = phoneAuthInfoDto.getUid();
+        String phoneNumber = phoneAuthInfoDto.getPhoneNumber();
 
         // 새로운 멤버 생성
         Member member = Member.builder()
@@ -217,7 +217,7 @@ public class AuthService {
             throw new UserNotExistsException();
         }
         Member member = findMember.get();
-        member.updatePassword(newPassword);
+        member.updatePassword(passwordEncoder.encode(newPassword));
     }
 
 

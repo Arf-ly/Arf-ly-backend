@@ -33,7 +33,7 @@ public class MemberCreateDto {
     private String password;
 
     //나중에 notNull 필요
-    @Schema(description = "파이어베이스 인증 정보 (UID 및 전화번호)", requiredMode = RequiredMode.REQUIRED)
+    @Schema(description = "파이어베이스 토큰", requiredMode = RequiredMode.REQUIRED)
     @NotNull(message = "파이어베이스 토큰 정보가 누락되었습니다.")
     @Valid
     private FirebaseToken token;
