@@ -52,8 +52,8 @@ public enum ErrorCode {
     WALK_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 산책 기록을 찾을 수 없습니다.", "WALK_RECORD_NOT_FOUND"),
     WALK_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST, "이미 반려동물에게 배정된 산책 기록입니다.", "WALK_ALREADY_ASSIGNED"),
     INVALID_SENSOR_DATA(HttpStatus.BAD_REQUEST, "수신된 센서 데이터 형식이 올바르지 않거나 비어 있습니다.", "INVALID_SENSOR_DATA"),
-
-    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 진단 리포트가 없습니다.", "REPORT_NOT_FOUND");
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 진단 리포트가 없습니다.", "REPORT_NOT_FOUND"),
+    WALK_NOT_FOUND(HttpStatus.NOT_FOUND, "산책 기록을 찾을 수 없습니다.", "WALK_NOT_FOUND");
 
 
     //예외 상태 코드

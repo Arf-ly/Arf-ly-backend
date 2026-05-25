@@ -2,9 +2,11 @@ package com.capstone.arfly.iot.repository;
 
 import com.capstone.arfly.iot.domain.IoTDevice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional; // 🌟 핵심 포인트!
 
+@Repository
 public interface IoTDeviceRepository extends JpaRepository<IoTDevice, Long> {
 
     /**
@@ -12,5 +14,4 @@ public interface IoTDeviceRepository extends JpaRepository<IoTDevice, Long> {
      * Optional로 감싸서 반환해야 Service 코드에서 예외 처리(.orElseThrow)를 우아하게 할 수 있습니다.
      */
     Optional<IoTDevice> findByDeviceUid(String deviceUid);
-
 }

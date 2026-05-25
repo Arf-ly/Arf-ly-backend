@@ -41,7 +41,9 @@ public class SecurityConfig {
                                 , "/auth/refresh", "/terms/latest", "/member/check-username", "/auth/phone/verify"
                                 , "/auth/token/refresh", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/auth/id/find", "/auth/password/verify", "/auth/password/reset",
-                                "/oauth2/**", "/member/check-userId", "/api/iot/**").permitAll().anyRequest().authenticated())
+                                "/oauth2/**", "/member/check-userId", "/api/iot/**",
+                                "/auth/id/find", "/auth/password/verify", "/auth/password/reset", "/api/walks/**",
+                                "/oauth2/**", "/member/check-userId").permitAll().anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -52,7 +54,7 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(
                 List.of("http://localhost:3000", "http://localhost:5173", "https://arf-ly-web.vercel.app"));
-        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
