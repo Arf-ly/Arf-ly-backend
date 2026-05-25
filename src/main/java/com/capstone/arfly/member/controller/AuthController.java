@@ -70,8 +70,10 @@ public class AuthController {
     })
     @PostMapping("/create")
     public ResponseEntity<?> userCreate(@Valid @RequestBody MemberCreateDto memberCreateDto) {
+        PhoneAuthInfoDto phoneAuthInfoDto = firebaseService.verifyTokenAndGetInfo(
+                memberCreateDto.getToken().getToken());
         //신규 유저 생성
-        Member member = authService.create(memberCreateDto);
+        Member member = authService.create(memberCreateDto, phoneAuthInfoDto);
         //토큰 생성
         TokenResponseDto response = authService.generateTokens(member);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
