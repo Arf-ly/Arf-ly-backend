@@ -40,6 +40,8 @@ public class SecurityConfig {
                                 "/auth/kakao/doLogin", "/auth/naver/doLogin"
                                 , "/auth/refresh", "/terms/latest", "/member/check-username", "/auth/phone/verify"
                                 , "/auth/token/refresh", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
+                                "/auth/id/find", "/auth/password/verify", "/auth/password/reset",
+                                "/oauth2/**", "/member/check-userId", "/api/iot/**",
                                 "/auth/id/find", "/auth/password/verify", "/auth/password/reset", "/api/walks/**",
                                 "/oauth2/**", "/member/check-userId").permitAll().anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
