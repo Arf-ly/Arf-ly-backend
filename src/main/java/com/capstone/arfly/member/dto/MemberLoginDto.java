@@ -19,7 +19,7 @@ public class MemberLoginDto {
 
     @Schema(
             description = "사용자 아이디 (영문/숫자 조합, 4~20자)",
-            example = "member1234",
+            example = "test1234",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NotBlank(message = "아이디를 입력해주세요.")
@@ -28,7 +28,7 @@ public class MemberLoginDto {
 
     @Schema(
             description = "비밀번호 (8~20자)",
-            example = "password1234!",
+            example = "testuser1234",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @NotBlank(message = "비밀번호를 입력해주세요.")
