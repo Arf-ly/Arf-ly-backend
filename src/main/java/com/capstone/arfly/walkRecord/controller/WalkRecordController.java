@@ -52,8 +52,7 @@ public class WalkRecordController {
     @Operation(summary = "반려동물 산책 기록 배정",
             description = "산책 기록을 특정 반려 동물에 배정합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "배정 성공",
-                    content = @Content(schema = @Schema(example = "{\"result\": \"ok\"}"))),
+            @ApiResponse(responseCode = "200", description = "배정 성공"),
             @ApiResponse(responseCode = "403", description = "접근 권한 없음 (내 산책 기록 또는 내 반려동물이 아님)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "산책 기록 또는 반려동물을 찾을 수 없음",
@@ -78,8 +77,7 @@ public class WalkRecordController {
     @Operation(summary = "반려동물 산책 기록 수정 (동물 변경)",
             description = "이미 배정된 산책 기록의 반려동물만 변경합니다. 다른 필드는 수정 불가.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "변경 성공",
-                    content = @Content(schema = @Schema(example = "{\"result\": \"ok\"}"))),
+            @ApiResponse(responseCode = "200", description = "변경 성공"),
             @ApiResponse(responseCode = "403", description = "접근 권한 없음 (내 산책 기록 또는 내 반려동물이 아님)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "산책 기록 또는 반려동물을 찾을 수 없음",
