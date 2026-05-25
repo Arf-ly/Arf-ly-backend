@@ -28,6 +28,23 @@ public class IoTService {
 
     private static final int EARTH_RADIUS = 6371; // 지구 반지름 (km)
 
+    private final com.capstone.arfly.member.repository.MemberRepository memberRepository; // MemberRepository 주입 필요
+
+    public String registerDevice(IoTRequestDto.Register request) {
+        // 1. 회원 확인
+        com.capstone.arfly.member.domain.Member member = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
+
+        // 2. UID 생성 및 저장
+        String deviceUid = java.util.UUID.randomUUID().toString();
+        IoTDevice device = IoTDevice.builder()
+                .member(member)
+                .deviceUid(deviceUid)
+                .build();
+        iotDeviceRepository.save(device);
+
+        return deviceUid;
+    }
     public void uploadWalkData(String deviceUid, IoTRequestDto.UploadWalk request) {
 
         IoTDevice device = iotDeviceRepository.findByDeviceUid(deviceUid)

@@ -20,8 +20,11 @@ public class IoTController {
     @Operation(summary = "기기 등록", description = "최초 설정 단계에서 발급된 멤버 ID와 기기를 매핑합니다.")
     @PostMapping("/register")
     public ResponseEntity<IoTResponseDto.RegisterResult> register(@RequestBody IoTRequestDto.Register request) {
-        // 이전 구현 유지 혹은 보완
-        return ResponseEntity.ok().build();
+        // 💡 핵심: iotService를 호출해서 진짜 deviceUid를 발급받아옵니다!
+        String deviceUid = iotService.registerDevice(request);
+
+        // 💡 핵심: 발급받은 deviceUid를 피코에게 JSON으로 돌려줍니다!
+        return ResponseEntity.ok(new IoTResponseDto.RegisterResult(deviceUid));
     }
 
     @Operation(summary = "산책 데이터 일괄 업로드", description = "라즈베리파이 피코에서 모아둔 원본 JSON 배열 데이터를 전송받아 서버에서 직접 스코어링 및 거리 계산 후 미배정 기록을 만듭니다.")
