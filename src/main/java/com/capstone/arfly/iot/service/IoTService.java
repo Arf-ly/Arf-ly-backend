@@ -45,9 +45,9 @@ public class IoTService {
 
         return deviceUid;
     }
-    public void uploadWalkData(String deviceUid, IoTRequestDto.UploadWalk request) {
+    public void uploadWalkData(IoTRequestDto.UploadWalk request) {
 
-        IoTDevice device = iotDeviceRepository.findByDeviceUid(deviceUid)
+        IoTDevice device = iotDeviceRepository.findByDeviceUid(request.getDeviceUid())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEVICE_NOT_FOUND));
 
         // 2. 피코가 보낸 records 배열을 순회하며 총 이동 거리(km) 직접 계산 (하버사인)
