@@ -37,6 +37,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtTokenFilter extends OncePerRequestFilter {
     private final SecretKey ACCESS_SECRET_KEY;
 
+
     public JwtTokenFilter(@Value("${jwt.access-secret}") String accessSecretKey) {
         this.ACCESS_SECRET_KEY = Keys.hmacShaKeyFor(
                 Base64.getDecoder().decode(accessSecretKey));
