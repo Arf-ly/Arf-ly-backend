@@ -332,6 +332,7 @@ public class PostService {
             return PostListResponseDto.PostSummary.builder()
                     .id(post.getId())
                     .title(post.getTitle())
+                    .content(post.getContent())
                     .thumbnails(thumbnails)
                     .hasVideo(hasVideo)
                     .totalMediaCount(postFiles.size())
