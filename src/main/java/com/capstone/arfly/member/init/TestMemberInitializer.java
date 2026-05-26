@@ -12,6 +12,8 @@ import com.capstone.arfly.pet.repository.BreedsRepository;
 import com.capstone.arfly.pet.repository.PetRepository;
 import com.capstone.arfly.walkRecord.domain.WalkRecord;
 import com.capstone.arfly.walkRecord.repository.WalkRecordRepository;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +23,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -87,15 +86,15 @@ public class TestMemberInitializer implements ApplicationRunner {
         // ── 4. 반려동물 3마리 생성 ────────────────────────────────────
         List<Pet> existingPets = petRepository.findAllByMemberId(member.getId());
 
-        Pet noRecord  = getOrCreatePet(existingPets, member, akita, "바둑이", Sex.MALE,   2022);
-        Pet pet50_1   = getOrCreatePet(existingPets, member, akita, "초코",   Sex.FEMALE, 2021);
-        Pet pet50_2   = getOrCreatePet(existingPets, member, akita, "두부",   Sex.MALE,   2020);
+        Pet noRecord = getOrCreatePet(existingPets, member, akita, "바둑이", Sex.MALE, 2022);
+        Pet pet50_1 = getOrCreatePet(existingPets, member, akita, "초코", Sex.FEMALE, 2021);
+        Pet pet50_2 = getOrCreatePet(existingPets, member, akita, "두부", Sex.MALE, 2020);
 
         // ── 5. 미배정 산책 기록 10개 (pet = null) ────────────────────
         // 오늘부터 1~10일 전, 산책 시간/거리/점수 다양하게
         double[] distances = {3.2, 2.5, 1.8, 4.0, 2.1, 3.7, 1.5, 2.9, 3.5, 4.2};
-        double[] scores    = {87,  72,  65,  91,  70,  83,  60,  78,  85,  90};
-        int[]    durations = {45,  45,  30,  50,  35,  40,  25,  40,  45,  55};
+        double[] scores = {87, 72, 65, 91, 70, 83, 60, 78, 85, 90};
+        int[] durations = {45, 45, 30, 50, 35, 40, 25, 40, 45, 55};
 
         for (int i = 0; i < 10; i++) {
             LocalDateTime start = LocalDateTime.now().minusDays(i + 1)
@@ -119,9 +118,9 @@ public class TestMemberInitializer implements ApplicationRunner {
                     .withHour(i % 2 == 0 ? 8 : 18)
                     .withMinute(i % 3 == 0 ? 0 : 30)
                     .withSecond(0).withNano(0);
-            double dist  = 1.5 + (i % 7) * 0.5;          // 1.5 ~ 4.5 km 패턴
+            double dist = 1.5 + (i % 7) * 0.5;          // 1.5 ~ 4.5 km 패턴
             double score = 55 + (i % 10) * 4.0;           // 55 ~ 91 패턴
-            int    dur   = 25 + (i % 6) * 5;              // 25 ~ 50분 패턴
+            int dur = 25 + (i % 6) * 5;              // 25 ~ 50분 패턴
 
             WalkRecord walk = WalkRecord.builder()
                     .member(member)
@@ -143,9 +142,9 @@ public class TestMemberInitializer implements ApplicationRunner {
                     .withHour(i % 2 == 0 ? 7 : 17)
                     .withMinute(i % 4 == 0 ? 0 : 15)
                     .withSecond(0).withNano(0);
-            double dist  = 2.0 + (i % 5) * 0.7;          // 2.0 ~ 4.8 km 패턴
+            double dist = 2.0 + (i % 5) * 0.7;          // 2.0 ~ 4.8 km 패턴
             double score = 60 + (i % 8) * 4.5;            // 60 ~ 91.5 패턴
-            int    dur   = 30 + (i % 5) * 6;              // 30 ~ 54분 패턴
+            int dur = 30 + (i % 5) * 6;              // 30 ~ 54분 패턴
 
             WalkRecord walk = WalkRecord.builder()
                     .member(member)
@@ -167,7 +166,7 @@ public class TestMemberInitializer implements ApplicationRunner {
     }
 
     private Pet getOrCreatePet(List<Pet> existing, Member member, Breeds breeds,
-                                String name, Sex sex, int birthYear) {
+                               String name, Sex sex, int birthYear) {
         return existing.stream()
                 .filter(p -> p.getName().equals(name))
                 .findFirst()
