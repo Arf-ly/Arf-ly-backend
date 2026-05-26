@@ -40,8 +40,7 @@ public class PetController {
 
     private final PetService petService;
 
-//텟스팅
-
+    // 테스팅
     @Operation(
             summary = "반려동물 등록",
             description = "새로운 반려동물의 정보(JSON)와 프로필 사진(File)을 함께 등록합니다. 헤더에 JWT Access 토큰이 필수입니다."
