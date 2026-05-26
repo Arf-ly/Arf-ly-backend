@@ -7,28 +7,30 @@ import com.capstone.arfly.pet.dto.CreatePetRequest;
 import com.capstone.arfly.pet.dto.PetDetailResponse;
 import com.capstone.arfly.pet.dto.PetListResponse;
 import com.capstone.arfly.pet.dto.UpdatePetRequest;
-import com.capstone.arfly.pet.repository.PetRepository;
 import com.capstone.arfly.pet.service.PetService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.User;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Tag(name = "pet", description = "반려동물 API")
 @RestController
@@ -38,8 +40,7 @@ public class PetController {
 
     private final PetService petService;
 
-
-
+    // 테스팅
     @Operation(
             summary = "반려동물 등록",
             description = "새로운 반려동물의 정보(JSON)와 프로필 사진(File)을 함께 등록합니다. 헤더에 JWT Access 토큰이 필수입니다."
@@ -70,7 +71,7 @@ public class PetController {
             @Parameter(schema = @Schema(implementation = CreatePetRequest.class))
             @RequestPart(value = "request") CreatePetRequest request,
             @Parameter(schema = @Schema(type = "string", format = "binary"))
-            @RequestPart(value="file", required = false) MultipartFile file,
+            @RequestPart(value = "file", required = false) MultipartFile file,
             @Parameter(hidden = true)
             @AuthenticationPrincipal UserDetails userDetails) {
 
@@ -159,7 +160,7 @@ public class PetController {
     })
     @GetMapping
     public ResponseEntity<PetListResponse> getPetList(
-            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails){
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
 
         Long memberId = Long.parseLong(userDetails.getUsername());
         PetListResponse response = petService.getPetList(memberId);
