@@ -29,6 +29,9 @@ public class PostListResponseDto
         @Schema(description = "게시글 제목", example = "우리 집 강아지 첫 산책!")
         private String title;
 
+        @Schema(description = "게시글 내용 미리보기", example = "산책하다가 갑자기 멈춰서 한참을 킁킁거리길래...")
+        private String content;
+
         @Schema(description = "썸네일 이미지 URL 목록 (최대 3개)", example = "[\"https://s3.../img1.jpg\", \"https://s3.../img2.jpg\"]")
         private List<String> thumbnails;
 
