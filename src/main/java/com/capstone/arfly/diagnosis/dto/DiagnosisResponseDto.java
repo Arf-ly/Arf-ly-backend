@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 @Schema(description="스마트 진단 기록 조회")
@@ -43,4 +45,10 @@ public class DiagnosisResponseDto {
 
     @Schema(description = "관리법", example = "1. 잘 씻겨주기\n주 1~2회 ...")
     private String management;
+
+    @Schema(description = "알러지", example = "[\"소고기\"]")
+    private List<String> allergies;
+
+    @Schema(description = "펫 이미지", example = "https://example.com/profiles/user2.jpg")
+    private String petImageUrl;
 }

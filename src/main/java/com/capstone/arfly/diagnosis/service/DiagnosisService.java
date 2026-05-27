@@ -165,6 +165,17 @@ public class DiagnosisService {
 
         diagnosisImageRepository.save(diagnosisImage);
 
+        List<String> allergies = petAllergyRepository.findAllByPet(pet).stream()
+                .map(PetAllergy::getName)
+                .toList();
+
+        String petImageUrl = null;
+        File profileImage = pet.getProfileImage();
+
+        if (profileImage != null && !profileImage.getDeleted()){
+            petImageUrl = s3Uploader.getPublicUrl(profileImage.getFileKey());
+        }
+
         return DiagnosisResponseDto.builder()
                 .id(savedReport.getId())
                 .petName(pet.getName())
@@ -177,6 +188,8 @@ public class DiagnosisService {
                 .diseaseName(savedReport.getDiseaseName())
                 .probability(savedReport.getProbability())
                 .management(savedReport.getManagement())
+                .allergies(allergies)
+                .petImageUrl(petImageUrl)
                 .build();
     }
 
@@ -195,6 +208,17 @@ public class DiagnosisService {
         String fileKey = reportImage.getFile().getFileKey();
         String imageUrl = s3Uploader.getPublicUrl(fileKey);
 
+        List<String> allergies = petAllergyRepository.findAllByPet(pet).stream()
+                .map(PetAllergy::getName)
+                .toList();
+
+        String petImageUrl = null;
+        File profileImage = pet.getProfileImage();
+
+        if (profileImage != null && !profileImage.getDeleted()){
+            petImageUrl = s3Uploader.getPublicUrl(profileImage.getFileKey());
+        }
+
         return DiagnosisResponseDto.builder()
                 .id(report.getId())
                 .petName(pet.getName())
@@ -207,6 +231,8 @@ public class DiagnosisService {
                 .diseaseName(report.getDiseaseName())
                 .probability(report.getProbability())
                 .management(report.getManagement())
+                .allergies(allergies)
+                .petImageUrl(petImageUrl)
                 .build();
     }
 
