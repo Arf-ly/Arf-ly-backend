@@ -12,16 +12,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PostImageRepository extends JpaRepository<PostImage,Long> {
+public interface PostImageRepository extends JpaRepository<PostImage, Long> {
 
     @Query("""
                 SELECT new com.capstone.arfly.community.dto.PostDetailFileDto(f.id,f.fileKey)
                 FROM PostImage i
                 JOIN i.file f
-                WHERE i.post.id = :postId
+                WHERE i.post.id = :postId AND f.deleted = false
                 ORDER BY i.orderIndex ASC
             """)
-   List<PostDetailFileDto> findPostDetailFileByPostId(@Param("postId")Long postId);
+    List<PostDetailFileDto> findPostDetailFileByPostId(@Param("postId") Long postId);
 
 
     @Query("""
