@@ -1,15 +1,13 @@
 package com.capstone.arfly.community.controller;
 
-import com.capstone.arfly.community.dto.PostListResponseDto;
 import com.capstone.arfly.community.dto.CommentRequestDto;
 import com.capstone.arfly.community.dto.PostCreateRequestDto;
 import com.capstone.arfly.community.dto.PostDetailResponseDto;
+import com.capstone.arfly.community.dto.PostListResponseDto;
 import com.capstone.arfly.community.dto.PostUpdateRequestDto;
 import com.capstone.arfly.community.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -27,8 +25,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,8 +66,11 @@ public class PostController {
             @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)")
     })
     @GetMapping("/{postId}")
-    public ResponseEntity<?> getPostDetail(@PathVariable Long postId) {
-        PostDetailResponseDto responseDto = postService.getPostDetail(postId);
+    public ResponseEntity<?> getPostDetail(@PathVariable Long postId
+            , @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        long userId = Long.parseLong(userDetails.getUsername());
+        PostDetailResponseDto responseDto = postService.getPostDetail(postId, userId);
         return ResponseEntity.ok(responseDto);
     }
 
