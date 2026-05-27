@@ -44,8 +44,8 @@ public class PostListResponseDto
         @Schema(description = "좋아요 수", example = "200")
         private Integer likeCount;
 
-        @Schema(description = "작성일자", example = "2026-03-01")
-        private LocalDate createdAt;
+        @Schema(description = "작성일자 (방금, N분 전, N일 전 형태로 반환)", example = "방금")
+        private String createdAt;
 
         @Schema(description = "작성자 닉네임", example = "김민준")
         private String nickname;
