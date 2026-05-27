@@ -6,9 +6,11 @@ import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.repository.MemberRepository;
 import com.capstone.arfly.pet.domain.Breeds;
 import com.capstone.arfly.pet.domain.Pet;
+import com.capstone.arfly.pet.domain.PetAllergy;
 import com.capstone.arfly.pet.domain.Sex;
 import com.capstone.arfly.pet.domain.Species;
 import com.capstone.arfly.pet.repository.BreedsRepository;
+import com.capstone.arfly.pet.repository.PetAllergyRepository;
 import com.capstone.arfly.pet.repository.PetRepository;
 import com.capstone.arfly.walkRecord.domain.WalkRecord;
 import com.capstone.arfly.walkRecord.repository.WalkRecordRepository;
@@ -40,6 +42,7 @@ public class TestMemberInitializer implements ApplicationRunner {
     private final MemberRepository memberRepository;
     private final PetRepository petRepository;
     private final BreedsRepository breedsRepository;
+    private final PetAllergyRepository petAllergyRepository;
     private final IoTDeviceRepository iotDeviceRepository;
     private final WalkRecordRepository walkRecordRepository;
 
@@ -90,7 +93,15 @@ public class TestMemberInitializer implements ApplicationRunner {
         Pet pet50_1 = getOrCreatePet(existingPets, member, akita, "초코", Sex.FEMALE, 2021);
         Pet pet50_2 = getOrCreatePet(existingPets, member, akita, "두부", Sex.MALE, 2020);
 
-        // ── 5. 미배정 산책 기록 10개 (pet = null) ────────────────────
+        // ── 5. 알레르기 정보 (펫별 10개, 중복 없음) ──────────────────
+        addAllergiesIfAbsent(noRecord,
+                List.of("닭고기", "쇠고기", "유제품", "달걀", "옥수수", "밀", "콩", "땅콩", "참치", "연어"));
+        addAllergiesIfAbsent(pet50_1,
+                List.of("돼지고기", "오리고기", "양고기", "쌀", "보리", "귀리", "감자", "고구마", "토마토", "당근"));
+        addAllergiesIfAbsent(pet50_2,
+                List.of("게", "새우", "조개", "오징어", "아몬드", "잣", "호두", "효모", "사과", "복숭아"));
+
+        // ── 7. 미배정 산책 기록 10개 (pet = null) ────────────────────
         // 오늘부터 1~10일 전, 산책 시간/거리/점수 다양하게
         double[] distances = {3.2, 2.5, 1.8, 4.0, 2.1, 3.7, 1.5, 2.9, 3.5, 4.2};
         double[] scores = {87, 72, 65, 91, 70, 83, 60, 78, 85, 90};
@@ -111,7 +122,7 @@ public class TestMemberInitializer implements ApplicationRunner {
         }
         log.info("[TestInit] 미배정 산책 기록 10개 생성 완료");
 
-        // ── 6. 초코 산책 기록 50개 ────────────────────────────────────
+        // ── 8. 초코 산책 기록 50개 ────────────────────────────────────
         // 오늘부터 50일 전까지 하루 1개, 아침/저녁 교차
         for (int i = 0; i < 50; i++) {
             LocalDateTime start = LocalDateTime.now().minusDays(i + 1)
@@ -135,7 +146,7 @@ public class TestMemberInitializer implements ApplicationRunner {
         }
         log.info("[TestInit] 초코 산책 기록 50개 생성 완료");
 
-        // ── 7. 두부 산책 기록 50개 ────────────────────────────────────
+        // ── 9. 두부 산책 기록 50개 ────────────────────────────────────
         // 초코와 다른 시간대/패턴
         for (int i = 0; i < 50; i++) {
             LocalDateTime start = LocalDateTime.now().minusDays(i + 1)
@@ -163,6 +174,16 @@ public class TestMemberInitializer implements ApplicationRunner {
         log.info("[TestInit] 바둑이({}): 산책 기록 0개", noRecord.getId());
         log.info("[TestInit] 초코({}): 산책 기록 50개", pet50_1.getId());
         log.info("[TestInit] 두부({}): 산책 기록 50개", pet50_2.getId());
+    }
+
+    private void addAllergiesIfAbsent(Pet pet, List<String> allergyNames) {
+        if (!petAllergyRepository.findAllByPet(pet).isEmpty()) {
+            return;
+        }
+        allergyNames.forEach(name ->
+                petAllergyRepository.save(PetAllergy.builder().pet(pet).name(name).build())
+        );
+        log.info("[TestInit] {}({}) 알레르기 {}개 생성 완료", pet.getName(), pet.getId(), allergyNames.size());
     }
 
     private Pet getOrCreatePet(List<Pet> existing, Member member, Breeds breeds,
