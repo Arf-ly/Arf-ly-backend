@@ -33,6 +33,8 @@ import com.capstone.arfly.community.repository.PostLikeRepository;
 import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.repository.MemberRepository;
+
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -312,6 +314,25 @@ public class PostService {
                 .getLikeCount();
     }
 
+    private String formatRelativeTime(java.time.LocalDateTime createdAt) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        Duration duration = Duration.between(createdAt, now);
+        long seconds = duration.getSeconds();
+
+        if (seconds < 60) {
+            return "방금";
+        } else if (seconds < 3600) {
+            return (seconds / 60) + "분 전";
+        } else if (seconds < 86400) {
+            return (seconds / 3600) + "시간 전";
+        } else if (seconds < 2592000) { // 30일 미만
+            return (seconds / 86400) + "일 전";
+        } else {
+            // 30일 이상 지난 글은 그냥 "2026-05-27" 형식으로 보여줌
+            return createdAt.toLocalDate().toString();
+        }
+    }
+
     // 공통 DTO 응답 생성 메서드
     private PostListResponseDto createPostListResponse(List<Post> posts, boolean hasNext, Long nextCursor, int size,
                                                        Long totalCount) {
@@ -324,6 +345,7 @@ public class PostService {
             List<PostImage> postImages = imageMap.getOrDefault(post.getId(), Collections.emptyList());
             List<File> postFiles = postImages.stream()
                     .map(PostImage::getFile)
+                    .filter(file -> !file.getDeleted()) // 👈 이 한 줄로 삭제된 파일은 리스트에서 투명인간이 됩니다.
                     .toList();
 
             List<String> thumbnails = postFiles.stream()
@@ -342,7 +364,7 @@ public class PostService {
                     .hasVideo(hasVideo)
                     .totalMediaCount(postFiles.size())
                     .likeCount(post.getLikeCount())
-                    .createdAt(post.getCreatedAt().toLocalDate())
+                    .createdAt(formatRelativeTime(post.getCreatedAt()))
                     .nickname(post.getMember().getNickName())
                     .build();
         }).toList();
