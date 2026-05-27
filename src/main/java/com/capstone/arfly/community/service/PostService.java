@@ -18,6 +18,7 @@ import com.capstone.arfly.community.domain.Post;
 import com.capstone.arfly.community.domain.PostImage;
 import com.capstone.arfly.community.dto.CommentDetailResponseDto;
 import com.capstone.arfly.community.dto.CommentRequestDto;
+import com.capstone.arfly.community.dto.FileDto;
 import com.capstone.arfly.community.dto.PostCreateRequestDto;
 import com.capstone.arfly.community.dto.PostDetailFileDto;
 import com.capstone.arfly.community.dto.PostDetailResponseDto;
@@ -130,14 +131,18 @@ public class PostService {
     }
 
 
-    public PostDetailResponseDto getPostDetail(Long postId) {
+    @Transactional(readOnly = true)
+    public PostDetailResponseDto getPostDetail(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         List<CommentDetailResponseDto> commentList = commentRepository.findCommentsWithAuthorByPostId(
                 post.getId());
         List<PostDetailFileDto> fileList = postImageRepository.findPostDetailFileByPostId(post.getId());
+        List<FileDto> fileDtoList = fileList.stream().map(file ->
+                        FileDto.builder().fileId(file.fileId()).fileUrl(s3Uploader.getPublicUrl(file.fileKey())).build())
+                .collect(Collectors.toList());
 
         PostDetailResponseDto response = PostDetailResponseDto.makePostDetailResponse(post, commentList,
-                fileList);
+                fileDtoList, userId);
 
         return response;
     }
