@@ -1,6 +1,7 @@
 package com.capstone.arfly.walkRecord.repository;
 
 import com.capstone.arfly.walkRecord.domain.WalkRecord;
+import com.capstone.arfly.pet.domain.Pet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,4 +47,6 @@ public interface WalkRecordRepository extends JpaRepository<WalkRecord, Long> {
     List<WalkRecord> findByPetIdAndStatusTrueAndStartTimeBetween(Long petId, LocalDateTime start, LocalDateTime end);
     // 특정 pet의 기간 내 산책 기록
     List<WalkRecord> findAllByPet_IdAndStartTimeBetween(Long petId, LocalDateTime start, LocalDateTime end);
+
+    void deleteAllByPet(Pet pet);
 }

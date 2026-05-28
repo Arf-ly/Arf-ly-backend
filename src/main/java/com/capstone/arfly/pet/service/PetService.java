@@ -12,6 +12,7 @@ import com.capstone.arfly.pet.domain.Breeds;
 import com.capstone.arfly.pet.domain.Pet;
 import com.capstone.arfly.pet.domain.PetAllergy;
 import com.capstone.arfly.pet.domain.Species;
+import com.capstone.arfly.walkRecord.repository.WalkRecordRepository; // 💡 이거 추가!
 import com.capstone.arfly.pet.dto.*;
 import com.capstone.arfly.pet.repository.BreedsRepository;
 import com.capstone.arfly.pet.repository.PetAllergyRepository;
@@ -33,6 +34,7 @@ public class PetService {
     private final MemberRepository memberRepository;
     private final BreedsRepository breedsRepository;
     private final FileRepository fileRepository;
+    private final WalkRecordRepository walkRecordRepository;
     private final S3Uploader s3Uploader;
 
     @Transactional
@@ -253,6 +255,7 @@ public class PetService {
             profileImage.markAsDeleted();
         }
 
+        walkRecordRepository.deleteAllByPet(pet);
         petAllergyRepository.deleteAllByPet(pet);
         petRepository.delete(pet);
     }
