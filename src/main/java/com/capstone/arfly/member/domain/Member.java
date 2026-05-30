@@ -7,7 +7,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,9 +27,8 @@ public class Member {
 
     private String password;
 
-    @Builder.Default
     @Column(nullable = false, unique = true)
-    private String nickName = "유저" + UUID.randomUUID();
+    private String nickName;
 
     @Column(unique = true)
     private String phoneNumber;

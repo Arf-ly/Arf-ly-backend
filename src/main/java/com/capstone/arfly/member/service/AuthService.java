@@ -58,12 +58,15 @@ public class AuthService {
         String firebaseUid = phoneAuthInfoDto.getUid();
         String phoneNumber = phoneAuthInfoDto.getPhoneNumber();
 
+        String nickName = generateUniqueNickName();
+
         // 새로운 멤버 생성
         Member member = Member.builder()
                 .userId(memberCreateDto.getUserId())
                 .password(passwordEncoder.encode(memberCreateDto.getPassword()))
                 .firebaseUid(firebaseUid)
                 .phoneNumber(phoneNumber)
+                .nickName(nickName)
                 .build();
         try {
             memberRepository.saveAndFlush(member);
@@ -164,11 +167,12 @@ public class AuthService {
     public Member createOauth(String socialId, String email, SocialType socialType, String nickname) {
         Member member;
         if (nickname == null || nickname.isBlank()) {
-            member = Member.builder().userId(email).socialType(socialType).socialId(socialId)
+            String nickName = generateUniqueNickName();
+            member = Member.builder().userId(email).socialType(socialType).socialId(socialId).nickName(nickName)
                     .build();
         } else {
             member = Member.builder().userId(email).socialType(socialType).socialId(socialId)
-                    .nickName(nickname + UUID.randomUUID())
+                    .nickName(nickname + UUID.randomUUID().toString().substring(0, 8))
                     .build();
         }
         memberRepository.save(member);
@@ -218,6 +222,20 @@ public class AuthService {
         }
         Member member = findMember.get();
         member.updatePassword(passwordEncoder.encode(newPassword));
+    }
+
+    private String generateUniqueNickName() {
+        while (true) {
+            String nickName = generatedNickName();
+            if (!memberRepository.existsByNickName(nickName)) {
+                return nickName;
+            }
+        }
+    }
+
+
+    private String generatedNickName() {
+        return "유저" + UUID.randomUUID().toString().substring(0, 8);
     }
 
 
