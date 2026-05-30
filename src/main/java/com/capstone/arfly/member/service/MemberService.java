@@ -9,6 +9,9 @@ import com.capstone.arfly.diagnosis.repository.DiagnosisReportRepository;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.dto.UserIdCheckRequestDto;
+import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.model.GeocodingResult;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.capstone.arfly.member.dto.UpdateUserRequest;
 import com.capstone.arfly.member.dto.UserNameCheckRequestDto;
@@ -28,6 +31,7 @@ public class MemberService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+    private final GeoApiContext geoApiContext;
 
     @Transactional(readOnly = true)
     public boolean isUsernameAvailable(UserNameCheckRequestDto userNameCheckRequestDto) {
@@ -88,10 +92,19 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
 
+        double latitude = member.getLatitude();
+        double longitude = member.getLongitude();
+
+        if (request.getRoadAddress() != null && !request.getRoadAddress().isBlank()) {
+            double[] location = getLatLngFromAddress(request.getRoadAddress());
+            latitude = location[0];
+            longitude = location[1];
+        }
+
         member.updateProfile(
                 request.getNickname(),
-                request.getLatitude(),
-                request.getLongitude(),
+                latitude,
+                longitude,
                 request.getRoadAddress(),
                 request.isNotificationEnabled()
         );
@@ -103,6 +116,23 @@ public class MemberService {
         }
     }
 
+    // 도로명 주소를 위도 경도로 반환
+    private double[] getLatLngFromAddress(String roadAddress) {
+        try {
+            GeocodingResult[] results = GeocodingApi.geocode(geoApiContext, roadAddress).await();
+
+            if (results == null || results.length == 0) {
+                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+            }
+
+            double latitude = results[0].geometry.location.lat;
+            double longitude = results[0].geometry.location.lng;
+
+            return new double[]{latitude, longitude};
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_ADDRESS_VALUE);
+        }
+    }
 
 
 }

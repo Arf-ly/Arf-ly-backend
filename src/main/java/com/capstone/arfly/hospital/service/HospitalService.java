@@ -128,9 +128,9 @@ public class HospitalService {
 
             List<String> imageUrls = new ArrayList<>();
 
-            // 사진 없으면 response 안함, 최대 5개
+            // 사진 없으면 response 안함, 최대 1개
             if (response.getPhotosCount() > 0) {
-                int photoCount = Math.min(5, response.getPhotosCount());
+                int photoCount = Math.min(1, response.getPhotosCount());
 
                 for(int i = 0; i < photoCount; i++) {
                     String photoName = response.getPhotos(i).getName();
@@ -184,7 +184,7 @@ public class HospitalService {
                                 .build()
                 )
                 .addIncludedTypes("veterinary_care") // 동물병원 필터링
-                .setMaxResultCount(10)
+                .setMaxResultCount(5)
                 .setLanguageCode("ko")
                 .build();
 
