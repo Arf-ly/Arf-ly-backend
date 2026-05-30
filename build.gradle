@@ -61,6 +61,9 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.ai:spring-ai-starter-model-openai:2.0.0-M1'
+
+    implementation 'com.google.maps:google-maps-services:2.2.0'
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
 }
 
 tasks.named('test') {

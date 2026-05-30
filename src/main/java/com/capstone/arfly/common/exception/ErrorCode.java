@@ -40,6 +40,7 @@ public enum ErrorCode {
     INVALID_PLACES_ID(HttpStatus.BAD_REQUEST, "잘못된 placesId입니다.", "INVALID_PLACES_ID"),
     POST_AUTHOR_MISMATCH(HttpStatus.FORBIDDEN, "게시글 작성자만 삭제할 수 있습니다.", "POST_AUTHOR_MISMATCH"),
     POST_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 게시글에 존재하지 않는 파일입니다.", "POST_FILE_NOT_FOUND"),
+    INVALID_ADDRESS_VALUE(HttpStatus.BAD_REQUEST, "잘못된 도로명 주소 또는 구글 서버 오류입니다.", "INVALID_ADDRESS_VALUE"),
 
     AI_MODEL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "사진을 진단하는 중 오류가 발생했습니다.", "AI_MODEL_ERROR"),
     OPENAI_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "관리법 생성 중 오류가 발생했습니다.", "OPENAI_API_ERROR"),

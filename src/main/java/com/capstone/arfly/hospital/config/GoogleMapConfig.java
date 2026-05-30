@@ -1,6 +1,7 @@
 package com.capstone.arfly.hospital.config;
 
 import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.maps.GeoApiContext;
 import com.google.maps.places.v1.PlacesClient;
 import com.google.maps.places.v1.PlacesSettings;
 import lombok.extern.slf4j.Slf4j;
@@ -20,22 +21,6 @@ public class GoogleMapConfig {
 
     @Bean(destroyMethod = "close")
     public PlacesClient placesClient() throws IOException {
-        // 필드 마스크 설정(Place Details, Nearby Search 따로)
-        // Place Details
-        String detailFields = "id," +
-                "displayName," +
-                "shortFormattedAddress," +
-                "photos," +
-                "regularOpeningHours," +
-                "nationalPhoneNumber";
-
-        // Nearby Search
-        String searchFields = "places.id," +
-                "places.displayName," +
-                "places.location," +
-                "places.shortFormattedAddress," +
-                "places.photos," +
-                "places.regularOpeningHours";
 
         PlacesSettings settings = null;
 
@@ -55,5 +40,12 @@ public class GoogleMapConfig {
         log.info("구글 맵 api 초기 설정 완료!");
 
         return PlacesClient.create(settings);
+    }
+
+    @Bean
+    public GeoApiContext geoApiContext() {
+        return new GeoApiContext.Builder()
+                .apiKey(apiKey)
+                .build();
     }
 }
