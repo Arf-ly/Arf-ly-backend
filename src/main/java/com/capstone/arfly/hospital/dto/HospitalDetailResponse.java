@@ -24,6 +24,9 @@ public class HospitalDetailResponse {
     @Schema(description = "병원 사진 주소(리스트, 최대 5개)", example = "/api/v1/hospitals/photo?name=places/ChIJNx.../photos/AUQs...")
     public List<String> imageUrl;
 
+    @Schema(description = "병원 전화번호", example = "053-123-4567")
+    public String phoneNumber;
+
     @Schema(description = "운영 시간 리스트", example = "[11:00 ~ 20:00, 11:00 ~ 20:00, 11:00 ~ 20:00," +
             " 11:00 ~ 20:00, 11:00 ~ 20:00, 11:00 ~ 20:00, 휴무]")
     public List<String> operating;

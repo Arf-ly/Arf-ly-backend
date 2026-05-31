@@ -147,6 +147,7 @@ public class HospitalService {
                     .id(response.getId())
                     .hospitalName(response.getDisplayName().getText())
                     .roadAddress(response.getShortFormattedAddress())
+                    .phoneNumber(response.getNationalPhoneNumber())
                     .operating(operatingHours)
                     .opened(response.hasRegularOpeningHours() && response.getRegularOpeningHours().getOpenNow())
                     .imageUrl(imageUrls)
