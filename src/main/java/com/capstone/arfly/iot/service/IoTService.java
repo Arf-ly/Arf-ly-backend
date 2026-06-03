@@ -51,7 +51,7 @@ public class IoTService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEVICE_NOT_FOUND));
 
         double totalDistance = Math.round(calculateTotalDistance(request.getRecords()) * 10.0) / 10.0;
-        double activityScore = Math.round(calculateActivityScore(request.getRecords()) * 10.0) / 10.0;
+        double activityScore = calculateActivityScore(request.getRecords());
 
         LocalDateTime startDateTime = convertToLocalDateTime(request.getDate(), request.getStartTime());
         LocalDateTime endDateTime = convertToLocalDateTime(request.getDate(), request.getEndTime());
@@ -101,33 +101,17 @@ public class IoTService {
         return EARTH_RADIUS * c;
     }
 
-    // --- 가속도 센서 기반 만보기 활동량 점수 알고리즘 (1보 = 1점, 무제한) ---
+    // --- 가속도 센서 기반 활동량 점수 (3축 가속도 크기의 총합) ---
     private double calculateActivityScore(List<IoTRequestDto.SensorRecord> records) {
         if (records == null || records.isEmpty()) return 0.0;
 
-        int stepCount = 0;
-        // 임계값(Threshold): 중력(9.8) + 발을 디딜 때의 충격. 강아지 크기에 따라 11.0 ~ 13.0 사이로 튜닝하세요!
-        double stepThreshold = 12.0;
-        boolean isStepping = false;
+        double totalMagnitude = 0.0;
 
         for (IoTRequestDto.SensorRecord r : records) {
-            // 3축 가속도 벡터의 크기 계산
-            double magnitude = Math.sqrt(r.getAx() * r.getAx() + r.getAy() * r.getAy() + r.getAz() * r.getAz());
-
-            // 가속도가 임계값을 넘고, 이전에 걸음 상태가 아니었다면 1보 추가!
-            if (magnitude > stepThreshold && !isStepping) {
-                stepCount++;
-                isStepping = true;
-            }
-            // 가속도가 다시 평온한 상태(임계값 아래)로 돌아오면 다음 걸음을 인식할 준비
-            else if (magnitude < stepThreshold) {
-                isStepping = false;
-            }
+            totalMagnitude += Math.sqrt(r.getAx() * r.getAx() + r.getAy() * r.getAy() + r.getAz() * r.getAz());
         }
 
-        // 비즈니스 룰 반영: 1걸음 = 1점, 최대치 제한 없음!
-        // (DB 엔티티의 activityScore 타입이 Double이므로 형변환만 해줍니다)
-        return (double) stepCount;
+        return totalMagnitude;
     }
 
 
