@@ -50,8 +50,8 @@ public class IoTService {
         IoTDevice device = iotDeviceRepository.findByDeviceUid(request.getDeviceUid())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEVICE_NOT_FOUND));
 
-        double totalDistance = calculateTotalDistance(request.getRecords());
-        double activityScore = calculateActivityScore(request.getRecords());
+        double totalDistance = Math.round(calculateTotalDistance(request.getRecords()) * 10.0) / 10.0;
+        double activityScore = Math.round(calculateActivityScore(request.getRecords()) * 10.0) / 10.0;
 
         LocalDateTime startDateTime = convertToLocalDateTime(request.getDate(), request.getStartTime());
         LocalDateTime endDateTime = convertToLocalDateTime(request.getDate(), request.getEndTime());
@@ -73,9 +73,16 @@ public class IoTService {
         double totalDist = 0.0;
         if (records == null || records.size() < 2) return 0.0;
 
-        for (int i = 0; i < records.size() - 1; i++) {
-            IoTRequestDto.SensorRecord current = records.get(i);
-            IoTRequestDto.SensorRecord next = records.get(i + 1);
+        // 유효하지 않은 GPS 좌표(0.0) 먼저 제거
+        List<IoTRequestDto.SensorRecord> validRecords = records.stream()
+                .filter(r -> r.getLat() != 0.0 && r.getLon() != 0.0)
+                .toList();
+
+        if (validRecords.size() < 2) return 0.0;
+
+        for (int i = 0; i < validRecords.size() - 1; i++) {
+            IoTRequestDto.SensorRecord current = validRecords.get(i);
+            IoTRequestDto.SensorRecord next = validRecords.get(i + 1);
 
             totalDist += haversine(current.getLat(), current.getLon(), next.getLat(), next.getLon());
         }

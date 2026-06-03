@@ -267,7 +267,7 @@ public class DiagnosisService {
         }
 
         if (diseaseName.startsWith("정상")) {
-            return "정상";
+            return "정상/해당 없음";
         }
 
         if (diseaseName.startsWith("A") && diseaseName.length() > 3) {
