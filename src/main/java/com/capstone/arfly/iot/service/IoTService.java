@@ -51,7 +51,7 @@ public class IoTService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEVICE_NOT_FOUND));
 
         double totalDistance = Math.round(calculateTotalDistance(request.getRecords()) * 10.0) / 10.0;
-        double activityScore = calculateActivityScore(request.getRecords());
+        double activityScore = Math.round(calculateActivityScore(request.getRecords()) * 10.0) / 10.0;
 
         LocalDateTime startDateTime = convertToLocalDateTime(request.getDate(), request.getStartTime());
         LocalDateTime endDateTime = convertToLocalDateTime(request.getDate(), request.getEndTime());
