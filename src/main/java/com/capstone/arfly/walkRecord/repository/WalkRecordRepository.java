@@ -26,6 +26,7 @@ public interface WalkRecordRepository extends JpaRepository<WalkRecord, Long> {
         LEFT JOIN FETCH p.profileImage
         JOIN FETCH p.breeds
         WHERE w.member.id = :memberId
+        ORDER BY w.createdAt DESC
         """)
     List<WalkRecord> findAllAssignedByMemberId(@Param("memberId") Long memberId);
 
@@ -39,6 +40,7 @@ public interface WalkRecordRepository extends JpaRepository<WalkRecord, Long> {
         LEFT JOIN FETCH p.profileImage
         JOIN FETCH p.breeds
         WHERE w.member.id = :memberId AND p.id = :petId
+        ORDER BY w.createdAt DESC
         """)
     List<WalkRecord> findAllByMemberIdAndPetId(@Param("memberId") Long memberId, @Param("petId") Long petId);
 
