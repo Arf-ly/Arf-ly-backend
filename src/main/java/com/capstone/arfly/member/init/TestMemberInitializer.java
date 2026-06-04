@@ -48,6 +48,7 @@ public class TestMemberInitializer implements ApplicationRunner {
 
     private static final String DEVICE_UID = "TEST-DEVICE-001";
 
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
@@ -65,7 +66,7 @@ public class TestMemberInitializer implements ApplicationRunner {
         });
 
         // 이미 산책 데이터가 있으면 전부 skip
-        if (!walkRecordRepository.findAllByMember_IdAndPetIsNull(member.getId()).isEmpty()
+        if (!walkRecordRepository.findAllByMember_IdAndPetIsNullOrderByCreatedAtDesc(member.getId()).isEmpty()
                 || !walkRecordRepository.findAllAssignedByMemberId(member.getId()).isEmpty()) {
             log.info("[TestInit] 산책 더미 데이터가 이미 존재합니다. skip");
             return;

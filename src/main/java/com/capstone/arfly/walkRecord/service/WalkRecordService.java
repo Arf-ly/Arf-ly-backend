@@ -57,7 +57,7 @@ public class WalkRecordService {
     // 미배정 산책 기록 목록 조회
     @Transactional(readOnly = true)
     public UnassignedWalkListResponse getUnassignedWalks(Long memberId) {
-        List<WalkRecord> records = walkRecordRepository.findAllByMember_IdAndPetIsNull(memberId);
+        List<WalkRecord> records = walkRecordRepository.findAllByMember_IdAndPetIsNullOrderByCreatedAtDesc(memberId);
         List<UnassignedWalkDto> walks = records.stream()
                 .map(this::toUnassignedWalkDto)
                 .toList();

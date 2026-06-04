@@ -17,7 +17,7 @@ public interface WalkRecordRepository extends JpaRepository<WalkRecord, Long> {
     // (홈 화면 및 미배정 알림에 사용)
     List<WalkRecord> findByMemberIdAndStatusFalse(Long memberId);
     // 미배정 산책 기록
-    List<WalkRecord> findAllByMember_IdAndPetIsNull(Long memberId);
+    List<WalkRecord> findAllByMember_IdAndPetIsNullOrderByCreatedAtDesc(Long memberId);
 
     // 배정된 산책 기록 전체
     @Query("""
