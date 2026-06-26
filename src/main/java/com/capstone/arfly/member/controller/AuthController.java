@@ -28,6 +28,7 @@ import com.capstone.arfly.member.service.AuthService;
 import com.capstone.arfly.member.service.GoogleService;
 import com.capstone.arfly.member.service.KakaoService;
 import com.capstone.arfly.member.service.NaverService;
+import com.capstone.arfly.member.service.TermsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -58,6 +59,7 @@ public class AuthController {
     private final KakaoService kakaoService;
     private final NaverService naverService;
     private final FirebaseService firebaseService;
+    private final TermsService termsService;
 
     @Operation(summary = "회원가입", description = "사용자의 정보를 받아 회원가입 진행 후 토큰을 반환한다.")
     @ApiResponses(value = {
@@ -75,7 +77,7 @@ public class AuthController {
         //신규 유저 생성
         Member member = authService.create(memberCreateDto, phoneAuthInfoDto);
         //토큰 생성
-        TokenResponseDto response = authService.generateTokens(member);
+        TokenResponseDto response = authService.generateTokens(member, true);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -93,7 +95,7 @@ public class AuthController {
         //검증
         Member member = authService.login(memberLoginDto);
         //토큰 발급
-        TokenResponseDto response = authService.generateTokens(member);
+        TokenResponseDto response = authService.generateTokens(member, true);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -111,8 +113,9 @@ public class AuthController {
     public ResponseEntity<?> reissueToken(@Valid @RequestBody AccessTokenRequestDto accessTokenRequestDto) {
         //리프레시 토큰 검증
         Member member = authService.validateRefreshToken(accessTokenRequestDto);
+        boolean termsAgreed = termsService.hasAgreedToLatestTerms(member.getId());
         //엑세스 토큰 재발급
-        String accessToken = jwtTokenUtil.createAccessToken(member.getId(), member.getRole().toString());
+        String accessToken = jwtTokenUtil.createAccessToken(member.getId(), member.getRole().toString(), termsAgreed);
         AccessTokenResponseDto response = AccessTokenResponseDto.builder().accessToken(accessToken).build();
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -177,7 +180,8 @@ public class AuthController {
         }
 
         // 회원가입 돼 있는 회원이라면 토큰 발급
-        TokenResponseDto response = authService.generateTokens(originalMember);
+        boolean termsAgreed = (originalMember != null) && termsService.hasAgreedToLatestTerms(originalMember.getId());
+        TokenResponseDto response = authService.generateTokens(originalMember, termsAgreed);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -221,7 +225,8 @@ public class AuthController {
                     SocialType.KAKAO, kakaoProfileDto.getKakao_account().getProfile().getNickname());
         }
 
-        TokenResponseDto response = authService.generateTokens(originalMember);
+        boolean termsAgreed = (originalMember != null) && termsService.hasAgreedToLatestTerms(originalMember.getId());
+        TokenResponseDto response = authService.generateTokens(originalMember, termsAgreed);
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
@@ -265,7 +270,9 @@ public class AuthController {
                     naverProfileDto.getResponse().getEmail(),
                     SocialType.NAVER, naverProfileDto.getResponse().getName());
         }
-        TokenResponseDto response = authService.generateTokens(originalMember);
+
+        boolean termsAgreed = (originalMember != null) && termsService.hasAgreedToLatestTerms(originalMember.getId());
+        TokenResponseDto response = authService.generateTokens(originalMember, termsAgreed);
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
