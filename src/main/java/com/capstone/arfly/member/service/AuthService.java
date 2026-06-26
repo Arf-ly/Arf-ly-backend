@@ -109,8 +109,8 @@ public class AuthService {
     }
 
     //엑세스 및 리프레시 토큰 생성 및 반환
-    public TokenResponseDto generateTokens(Member member) {
-        String accessToken = jwtTokenUtil.createAccessToken(member.getId(), member.getRole().toString());
+    public TokenResponseDto generateTokens(Member member, boolean termsAgreed) {
+        String accessToken = jwtTokenUtil.createAccessToken(member.getId(), member.getRole().toString(), termsAgreed);
         String refreshToken = jwtTokenUtil.createRefreshToken(member);
         TokenResponseDto response = TokenResponseDto.builder().accessToken(accessToken)
                 .refreshToken(refreshToken).build();

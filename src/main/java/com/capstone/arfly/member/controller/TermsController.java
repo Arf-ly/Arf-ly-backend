@@ -1,6 +1,8 @@
 package com.capstone.arfly.member.controller;
 
+import com.capstone.arfly.common.auth.JwtTokenUtil;
 import com.capstone.arfly.common.exception.ErrorResponse;
+import com.capstone.arfly.member.dto.AccessTokenResponseDto;
 import com.capstone.arfly.member.dto.LatestTermsResponseDto;
 import com.capstone.arfly.member.dto.UserAgreementDto;
 import com.capstone.arfly.member.service.TermsService;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/terms")
 public class TermsController {
     private final TermsService termsService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @Operation(
             summary = "최신 약관 목록 조회",
@@ -78,10 +82,11 @@ public class TermsController {
 
     @Operation(
             summary = "OAuth 로그인 후 약관 동의",
-            description = "OAuth 로그인 후 최신 약관에 대한 동의 내역을 저장."
+            description = "OAuth 로그인 후 최신 약관에 대한 동의 내역을 저장하고, termsAgreed=true가 담긴 새 액세스 토큰을 반환."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "약관 동의 저장 성공"),
+            @ApiResponse(responseCode = "200", description = "약관 동의 저장 성공 및 새 액세스 토큰 반환",
+                    content = @Content(schema = @Schema(implementation = AccessTokenResponseDto.class))),
             @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(
@@ -96,6 +101,10 @@ public class TermsController {
             @RequestBody @Valid List<UserAgreementDto> userAgreements) {
         Long memberId = Long.parseLong(userDetails.getUsername());
         termsService.agreeToTerms(memberId, userAgreements);
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        String role = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .iterator().next().getAuthority().replace("ROLE_", "");
+        String newAccessToken = jwtTokenUtil.createAccessToken(memberId, role, true);
+        return new ResponseEntity<>(AccessTokenResponseDto.builder().accessToken(newAccessToken).build(), HttpStatus.OK);
     }
 }

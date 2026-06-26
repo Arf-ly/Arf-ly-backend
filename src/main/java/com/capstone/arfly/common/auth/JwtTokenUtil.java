@@ -28,7 +28,6 @@ public class JwtTokenUtil {
     private final RedisTemplate<String, String> redisTemplate;
 
 
-
     public JwtTokenUtil(@Value("${jwt.access-expiration}") long accessExpiration,
                         @Value("${jwt.access-secret}") String accessSecretKey
             , @Value("${jwt.refresh-expiration}") long refreshExpiration,
@@ -46,9 +45,11 @@ public class JwtTokenUtil {
         this.redisTemplate = redisTemplate;
     }
 
-    public String createAccessToken(Long id, String role) {
+    public String createAccessToken(Long id, String role, boolean termsAgreed) {
         Date now = new Date();
-        String accessToken = Jwts.builder().subject(String.valueOf(id)).claim("role", role)
+        String accessToken = Jwts.builder().subject(String.valueOf(id))
+                .claim("role", role)
+                .claim("termsAgreed", termsAgreed)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessExpiration * 60 * 1000L))
                 .signWith(ACCESS_SECRET_KEY)
