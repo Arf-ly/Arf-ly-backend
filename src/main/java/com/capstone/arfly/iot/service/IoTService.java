@@ -8,17 +8,19 @@ import com.capstone.arfly.iot.repository.IoTDeviceRepository;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.walkRecord.domain.WalkRecord;
 import com.capstone.arfly.walkRecord.repository.WalkRecordRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,8 +36,8 @@ public class IoTService {
     // IoTService.java
     public void registerDevice(Long memberId, String deviceUid) {
         // 1. 회원 확인 (로그인 유저 정보 활용)
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
+        Member member =
+                memberRepository.findById(memberId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
 
         // 2. 피코가 이미 가지고 있던 그 UID를 DB에 그대로 저장! (생성하는 게 아니라 매핑하는 것)
         IoTDevice device = IoTDevice.builder()
@@ -47,7 +49,8 @@ public class IoTService {
 
     public void uploadWalkData(IoTRequestDto.UploadWalk request) {
         // 피코가 보낸 deviceUid로 기기 조회
-        IoTDevice device = iotDeviceRepository.findByDeviceUid(request.getDeviceUid())
+        IoTDevice device = iotDeviceRepository
+                .findByDeviceUid(request.getDeviceUid())
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEVICE_NOT_FOUND));
 
         double totalDistance = Math.round(calculateTotalDistance(request.getRecords()) * 10.0) / 10.0;
@@ -93,9 +96,8 @@ public class IoTService {
         double dLat = Math.toRadians((lat2 - lat1));
         double dLong = Math.toRadians((lon2 - lon1));
 
-        double a = Math.pow(Math.sin(dLat / 2), 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.pow(Math.sin(dLong / 2), 2);
+        double a = Math.pow(Math.sin(dLat / 2), 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.pow(Math.sin(dLong / 2), 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return EARTH_RADIUS * c;
@@ -114,7 +116,6 @@ public class IoTService {
         return totalMagnitude;
     }
 
-
     // --- 피코 특유의 문자열 날짜 포맷 변환기 ---
     private LocalDateTime convertToLocalDateTime(String dateStr, String timeStr) {
         try {
@@ -127,7 +128,8 @@ public class IoTService {
             LocalTime time = LocalTime.parse(timeStr, DateTimeFormatter.ofPattern("HH:mm:ss"));
 
             return LocalDateTime.of(date, time);
-        } catch (Exception e) {
+        } catch (DateTimeParseException e) {
+            log.error("센서 날짜/시간 파싱 실패: dateStr={}, timeStr={}", dateStr, timeStr, e);
             throw new BusinessException(ErrorCode.INVALID_SENSOR_DATA);
         }
     }

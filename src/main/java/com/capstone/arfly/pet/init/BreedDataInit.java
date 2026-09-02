@@ -3,17 +3,17 @@ package com.capstone.arfly.pet.init;
 import com.capstone.arfly.pet.domain.Breeds;
 import com.capstone.arfly.pet.domain.Species;
 import com.capstone.arfly.pet.repository.BreedsRepository;
-import com.capstone.arfly.pet.service.PetService;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
@@ -41,7 +41,8 @@ public class BreedDataInit implements CommandLineRunner {
     private void loadBreeds(String path, Species species) {
         try {
             ClassPathResource resource = new ClassPathResource(path);
-            BufferedReader br = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
+            BufferedReader br =
+                    new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8));
 
             String line;
             int count = 0; // 몇 개 저장되는지 확인하기 위한 카운트
@@ -51,19 +52,15 @@ public class BreedDataInit implements CommandLineRunner {
 
                 if (!breedName.isEmpty()) {
                     // 엔티티 생성 후 DB에 저장
-                    breedsRepository.save(Breeds.builder()
-                            .name(breedName)
-                            .species(species)
-                            .build());
+                    breedsRepository.save(
+                            Breeds.builder().name(breedName).species(species).build());
                     count++;
                 }
             }
             log.info("[{}] 품종 {}개 세팅 완료!", species, count);
 
-        } catch (Exception e) {
+        } catch (IOException | DataAccessException e) {
             log.error("{} 파일을 읽거나 저장하는 중 오류가 발생했습니다: {}", path, e.getMessage());
         }
     }
-
-
 }

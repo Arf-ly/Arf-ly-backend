@@ -18,8 +18,15 @@ import com.capstone.arfly.pet.domain.Pet;
 import com.capstone.arfly.pet.domain.PetAllergy;
 import com.capstone.arfly.pet.repository.PetAllergyRepository;
 import com.capstone.arfly.pet.repository.PetRepository;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.retry.NonTransientAiException;
+import org.springframework.ai.retry.TransientAiException;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -28,12 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.springframework.web.reactive.function.client.WebClientException;
 
 @Service
 @RequiredArgsConstructor
@@ -49,24 +51,26 @@ public class DiagnosisService {
     private final WebClient webClient;
     private final ChatClient chatClient;
 
-
     @Transactional(readOnly = true)
-    public DiagnosisListResponseDto getDiagnosisList(Long memberId, Long petId,Long cursor, int size) {
+    public DiagnosisListResponseDto getDiagnosisList(Long memberId, Long petId, Long cursor, int size) {
 
-        PageRequest pageRequest = PageRequest.of(0, size+1);
-        List<DiagnosisReport> reports = diagnosisReportRepository.findReportsWithPaging(memberId, petId, cursor, pageRequest);
+        PageRequest pageRequest = PageRequest.of(0, size + 1);
+        List<DiagnosisReport> reports =
+                diagnosisReportRepository.findReportsWithPaging(memberId, petId, cursor, pageRequest);
 
         boolean hasNext = reports.size() > size;
-        if(hasNext){
+        if (hasNext) {
             reports.remove(size);
         }
 
-        Long nextCursor = reports.isEmpty() ? null : reports.get(reports.size()-1).getId();
+        Long nextCursor =
+                reports.isEmpty() ? null : reports.get(reports.size() - 1).getId();
 
         return createDiagnosisListResponse(reports, hasNext, nextCursor, size);
     }
 
-    public DiagnosisListResponseDto createDiagnosisListResponse(List<DiagnosisReport> reports, boolean hasNext, Long nextCursor, int size){
+    public DiagnosisListResponseDto createDiagnosisListResponse(
+            List<DiagnosisReport> reports, boolean hasNext, Long nextCursor, int size) {
         // 조회된 리포트들의 이미지를 한번의 쿼리로 다 가져오기
         List<DiagnosisImage> allImages = diagnosisImageRepository.findAllByDiagnosisReportInWithFile(reports);
 
@@ -74,27 +78,27 @@ public class DiagnosisService {
         Map<Long, List<DiagnosisImage>> imageMap = allImages.stream()
                 .collect(Collectors.groupingBy(img -> img.getDiagnosisReport().getId()));
 
-        List<DiagnosisListResponseDto.DiagnosisSummary> summaries = reports.stream().map(report -> {
+        List<DiagnosisListResponseDto.DiagnosisSummary> summaries = reports.stream()
+                .map(report -> {
+                    String imageUrl = null;
+                    List<DiagnosisImage> reportImages = imageMap.getOrDefault(report.getId(), Collections.emptyList());
 
-            String imageUrl = null;
-            List<DiagnosisImage> reportImages = imageMap.getOrDefault(report.getId(), Collections.emptyList());
+                    if (!reportImages.isEmpty()) {
+                        String fileKey = reportImages.get(0).getFile().getFileKey();
+                        imageUrl = s3Uploader.getPublicUrl(fileKey);
+                    }
 
-            if (!reportImages.isEmpty()) {
-                String fileKey = reportImages.get(0).getFile().getFileKey();
-                imageUrl = s3Uploader.getPublicUrl(fileKey);
-            }
-
-            return DiagnosisListResponseDto.DiagnosisSummary.builder()
-                    .id(report.getId())
-                    .createdAt(report.getCreatedAt().toLocalDate().toString())
-                    .imageUrl(imageUrl)
-                    .diseaseName(report.getDiseaseName())
-                    .petName(report.getPet().getName())
-                    .breedName(report.getPet().getBreeds().getName())
-                    .birthYear(report.getPet().getBirth())
-                    .build();
-
-        }).toList();
+                    return DiagnosisListResponseDto.DiagnosisSummary.builder()
+                            .id(report.getId())
+                            .createdAt(report.getCreatedAt().toLocalDate().toString())
+                            .imageUrl(imageUrl)
+                            .diseaseName(report.getDiseaseName())
+                            .petName(report.getPet().getName())
+                            .breedName(report.getPet().getBreeds().getName())
+                            .birthYear(report.getPet().getBirth())
+                            .build();
+                })
+                .toList();
 
         return DiagnosisListResponseDto.builder()
                 .diagnoses(summaries)
@@ -107,10 +111,10 @@ public class DiagnosisService {
     }
 
     @Transactional
-    public DiagnosisResponseDto getDiagnosis(Long petId, MultipartFile file, Long userId){
+    public DiagnosisResponseDto getDiagnosis(Long petId, MultipartFile file, Long userId) {
         Pet pet = petRepository.findById(petId).orElseThrow(() -> new BusinessException(ErrorCode.PET_NOT_FOUND));
 
-        if(!pet.getMember().getId().equals(userId)) throw new BusinessException(ErrorCode.PET_OWNER_MISMATCH);
+        if (!pet.getMember().getId().equals(userId)) throw new BusinessException(ErrorCode.PET_OWNER_MISMATCH);
 
         String spices = pet.getSpecies().name();
 
@@ -118,19 +122,19 @@ public class DiagnosisService {
 
         try {
             response = diagnosisSkin(file, spices);
-        } catch (Exception e){
+        } catch (IOException | WebClientException e) {
             throw new BusinessException(ErrorCode.AI_MODEL_ERROR);
         }
 
         String disease = cleanDiseaseName(response.getPrediction().getDisease());
         String probabilityText = response.getPrediction().getProbability();
-        Double probability =  Double.parseDouble(probabilityText.replace("%", ""));
+        Double probability = Double.parseDouble(probabilityText.replace("%", ""));
 
         String management = "";
 
         try {
-            management = createManagement(pet,disease,probabilityText);
-        }catch (Exception e){
+            management = createManagement(pet, disease, probabilityText);
+        } catch (TransientAiException | NonTransientAiException e) {
             throw new BusinessException(ErrorCode.OPENAI_API_ERROR);
         }
 
@@ -172,7 +176,7 @@ public class DiagnosisService {
         String petImageUrl = null;
         File profileImage = pet.getProfileImage();
 
-        if (profileImage != null && !profileImage.getDeleted()){
+        if (profileImage != null && !profileImage.getDeleted()) {
             petImageUrl = s3Uploader.getPublicUrl(profileImage.getFileKey());
         }
 
@@ -193,12 +197,13 @@ public class DiagnosisService {
                 .build();
     }
 
-    public DiagnosisResponseDto getDiagnosisDetail(Long reportId, Long userId){
+    public DiagnosisResponseDto getDiagnosisDetail(Long reportId, Long userId) {
 
         memberRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
 
-        DiagnosisReport report = diagnosisReportRepository.findById(reportId).orElseThrow(
-                () -> new BusinessException(ErrorCode.REPORT_NOT_FOUND));
+        DiagnosisReport report = diagnosisReportRepository
+                .findById(reportId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REPORT_NOT_FOUND));
 
         Pet pet = report.getPet();
 
@@ -215,7 +220,7 @@ public class DiagnosisService {
         String petImageUrl = null;
         File profileImage = pet.getProfileImage();
 
-        if (profileImage != null && !profileImage.getDeleted()){
+        if (profileImage != null && !profileImage.getDeleted()) {
             petImageUrl = s3Uploader.getPublicUrl(profileImage.getFileKey());
         }
 
@@ -249,7 +254,8 @@ public class DiagnosisService {
                 })
                 .contentType(MediaType.parseMediaType(file.getContentType()));
 
-        return webClient.post()
+        return webClient
+                .post()
                 .uri(uriBuilder -> uriBuilder
                         .path("/diagnose")
                         .queryParam("animal", spices)
@@ -277,37 +283,35 @@ public class DiagnosisService {
         return diseaseName;
     }
 
-    private String createManagement(Pet pet, String disease, String probabilityText){
+    private String createManagement(Pet pet, String disease, String probabilityText) {
 
         List<PetAllergy> allergies = petAllergyRepository.findAllByPet(pet);
 
-        String prompt = """
+        String prompt =
+                """
                 당신은 반려동물 피부 건강 관리 안내문을 작성하는 도우미입니다.
-                
+
                 [반려동물 정보]
                 이름: %s
                 태어난 년도: %s
                 품종: %s
                 알레르기 정보: %s
                 특이사항: %s
-                
+
                 [AI 피부 분석 결과]
                 의심 질환: %s
                 예측 확률: %s
-                
-                """.formatted(
-                pet.getName(),
-                pet.getBirth(),
-                pet.getBreeds(),
-                allergies.isEmpty() ? "없음" : allergies,
-                pet.getNote() == null ? "없음" : pet.getNote(),
-                disease,
-                probabilityText
-        );
 
-        return chatClient.prompt()
-                .user(prompt)
-                .call()
-                .content();
+                """
+                        .formatted(
+                                pet.getName(),
+                                pet.getBirth(),
+                                pet.getBreeds(),
+                                allergies.isEmpty() ? "없음" : allergies,
+                                pet.getNote() == null ? "없음" : pet.getNote(),
+                                disease,
+                                probabilityText);
+
+        return chatClient.prompt().user(prompt).call().content();
     }
 }

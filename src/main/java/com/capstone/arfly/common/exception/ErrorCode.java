@@ -34,6 +34,7 @@ public enum ErrorCode {
     MEDICATION_REMINDER_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 알람은 존재하지 않습니다.", "REMINDER_NOT_FOUND"),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다.", "POST_NOT_FOUND"),
     INVALID_MENTION(HttpStatus.BAD_REQUEST, "본문의 멘션 정보와 전달된 멘션 ID 목록이 일치하지 않습니다.", "INVALID_MENTION"),
+    POST_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "게시글 저장 중 오류가 발생했습니다.", "POST_SAVE_FAILED"),
 
     GOOGLE_MAP_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "구글 맵 api를 실행하는 도중 오류가 발생했습니다.", "GOOGLE_MAP_ERROR"),
     MAP_PHOTO_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "구글 맵 api으로 사진을 가져오는 도중 오류가 발생했습니다.", "MAP_PHOTO_ERROR"),
@@ -56,12 +57,11 @@ public enum ErrorCode {
     WALK_NOT_FOUND(HttpStatus.NOT_FOUND, "산책 기록을 찾을 수 없습니다.", "WALK_NOT_FOUND"),
     TERMS_NOT_AGREED(HttpStatus.FORBIDDEN, "필수 약관 동의가 필요합니다.", "TERMS_NOT_AGREED");
 
-
-    //예외 상태 코드
+    // 예외 상태 코드
     private final HttpStatus httpStatus;
-    //예외 메세지
+    // 예외 메세지
     private final String message;
-    //정의 예외 코드
+    // 정의 예외 코드
     private final String errorCode;
 
     ErrorCode(HttpStatus httpStatus, String message, String errorCode) {
