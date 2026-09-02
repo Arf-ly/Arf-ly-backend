@@ -1,9 +1,14 @@
 pre-commit:
   commands:
     spotless:
+      priority: 1
       glob: "*.java"
       run: ./gradlew spotlessApply
       stage_fixed: true
+    checkstyle:
+      priority: 2
+      glob: "*.java"
+      run: ./gradlew checkstyleMain
 
 commit-msg:
   commands:
