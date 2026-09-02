@@ -44,3 +44,6 @@ src/main/resources/firebase/firebase-admin-key.json
 
 CLAUDE.md
 redis/
+
+# Node (commitlint tooling)
+node_modules/

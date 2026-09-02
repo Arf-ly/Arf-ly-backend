@@ -1,2 +1,17 @@
 [tools]
 java = "temurin-17.0.20+101"
+node = "26.8.1"
+lefthook = "2.1.12"
+redis = "8.10.1"
+
+[env]
+_.file = ".env"
+
+[tasks.setup]
+description = "최초 프로젝트 환경 세팅"
+run = [
+  "mise install",
+  "npm install",
+  "lefthook install",
+  "cp -n .env.example .env",
+]
