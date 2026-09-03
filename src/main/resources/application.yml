@@ -29,6 +29,8 @@ file:
   max-image-size: 50MB
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: arf-ly-backend
   datasource:
