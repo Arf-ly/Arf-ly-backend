@@ -47,3 +47,6 @@ redis/
 
 # Node (commitlint tooling)
 node_modules/
+
+# Application logs
+logs/
