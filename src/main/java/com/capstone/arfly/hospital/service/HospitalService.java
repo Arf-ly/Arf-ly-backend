@@ -13,17 +13,16 @@ import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.maps.places.v1.*;
 import com.google.type.LatLng;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -35,24 +34,23 @@ public class HospitalService {
     private final PlacesClient placesClient;
 
     // Place Details 필드마스크
-    private static final String detailFields = "id," +
-            "displayName," +
-            "shortFormattedAddress," +
-            "photos," +
-            "regularOpeningHours," +
-            "nationalPhoneNumber";
+    private static final String detailFields = "id," + "displayName,"
+            + "shortFormattedAddress,"
+            + "photos,"
+            + "regularOpeningHours,"
+            + "nationalPhoneNumber";
 
     // Nearby Search 필드마스크
-    private static final String searchFields = "places.id," +
-            "places.displayName," +
-            "places.location," +
-            "places.shortFormattedAddress," +
-            "places.photos," +
-            "places.regularOpeningHours";
+    private static final String searchFields = "places.id," + "places.displayName,"
+            + "places.location,"
+            + "places.shortFormattedAddress,"
+            + "places.photos,"
+            + "places.regularOpeningHours";
 
     // 주변 병원 리스트 가져오기
-    public HospitalListUserResponse getHospitalList(Long userId){
-        Member member = memberRepository.findById(userId).orElseThrow(()->new BusinessException(ErrorCode.USER_NOT_EXISTS));
+    public HospitalListUserResponse getHospitalList(Long userId) {
+        Member member =
+                memberRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
         Double latitude = member.getLatitude();
         Double longitude = member.getLongitude();
         String roadAddress = member.getRoad_address();
@@ -60,7 +58,7 @@ public class HospitalService {
         List<HospitalListResponse> hospitalList = new ArrayList<>();
 
         try {
-            SearchNearbyResponse response = getMapResponse(latitude,longitude);
+            SearchNearbyResponse response = getMapResponse(latitude, longitude);
 
             for (Place place : response.getPlacesList()) {
                 String imageUrl = null;
@@ -76,13 +74,14 @@ public class HospitalService {
                         .latitude(place.getLocation().getLatitude())
                         .longitude(place.getLocation().getLongitude())
                         .roadAddress(place.getShortFormattedAddress())
-                        .opened(place.hasRegularOpeningHours() && place.getRegularOpeningHours().getOpenNow())
+                        .opened(place.hasRegularOpeningHours()
+                                && place.getRegularOpeningHours().getOpenNow())
                         .imageUrl(imageUrl)
                         .build();
 
                 hospitalList.add(hospitalDto);
             }
-        } catch (Exception e) {
+        } catch (ApiException e) {
             log.error("데이터 조회 중 에러 발생: ", e);
             throw new BusinessException(ErrorCode.GOOGLE_MAP_ERROR);
         }
@@ -98,7 +97,7 @@ public class HospitalService {
     // 장소 사진 함수
     public byte[] getHospitalPhoto(Long userId, String photoName, Integer maxHeight) {
 
-        memberRepository.findById(userId).orElseThrow(()->new BusinessException(ErrorCode.USER_NOT_EXISTS));
+        memberRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
 
         try {
             PhotoMedia photo = getPhotoResponse(photoName, maxHeight);
@@ -113,17 +112,17 @@ public class HospitalService {
             // 구글 맵에 해당 장소의 사진이 없는 경우
             log.info("해당 병원에 사진이 없습니다.");
             return null;
-        } catch (Exception e){
+        } catch (ApiException | RestClientException e) {
             log.error("구글 사진 로드 중 오류 발생. photoName: {}, 원인: {}", photoName, e.getMessage());
             throw new BusinessException(ErrorCode.MAP_PHOTO_ERROR);
         }
     }
 
     // 병원 상세정보 가져오기
-    public HospitalDetailResponse getHospitalDetail(Long userId, String placesId){
-        memberRepository.findById(userId).orElseThrow(()->new BusinessException(ErrorCode.USER_NOT_EXISTS));
+    public HospitalDetailResponse getHospitalDetail(Long userId, String placesId) {
+        memberRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
 
-        try{
+        try {
             Place response = getPlaceDetailResponse(placesId);
 
             List<String> imageUrls = new ArrayList<>();
@@ -132,7 +131,7 @@ public class HospitalService {
             if (response.getPhotosCount() > 0) {
                 int photoCount = Math.min(1, response.getPhotosCount());
 
-                for(int i = 0; i < photoCount; i++) {
+                for (int i = 0; i < photoCount; i++) {
                     String photoName = response.getPhotos(i).getName();
                     imageUrls.add(photoName);
                 }
@@ -149,55 +148,50 @@ public class HospitalService {
                     .roadAddress(response.getShortFormattedAddress())
                     .phoneNumber(response.getNationalPhoneNumber())
                     .operating(operatingHours)
-                    .opened(response.hasRegularOpeningHours() && response.getRegularOpeningHours().getOpenNow())
+                    .opened(response.hasRegularOpeningHours()
+                            && response.getRegularOpeningHours().getOpenNow())
                     .imageUrl(imageUrls)
                     .build();
 
             return hospitalDto;
-        }catch (ApiException e) {
+        } catch (ApiException e) {
             log.error("데이터 조회 중 에러 발생: ", e);
 
             // 잘못된 인자 or placesId 조회가 결과가 없을 때
-            if (e.getStatusCode().getCode().equals(StatusCode.Code.INVALID_ARGUMENT) ||
-                    e.getStatusCode().getCode().equals(StatusCode.Code.NOT_FOUND)) {
+            if (e.getStatusCode().getCode().equals(StatusCode.Code.INVALID_ARGUMENT)
+                    || e.getStatusCode().getCode().equals(StatusCode.Code.NOT_FOUND)) {
                 throw new BusinessException(ErrorCode.INVALID_PLACES_ID); // 400 Error
             }
 
-            throw new BusinessException(ErrorCode.GOOGLE_MAP_ERROR);
-        }catch (Exception e) {
-            // 그 외 런타임 에러 처리
-            log.error("병원 상세 정보 처리 중 예상치 못한 에러: ", e);
             throw new BusinessException(ErrorCode.GOOGLE_MAP_ERROR);
         }
     }
 
     // 주변 병원 리스트(구글 api) 호출 함수
-    private SearchNearbyResponse getMapResponse(Double latitude, Double longitude){
+    private SearchNearbyResponse getMapResponse(Double latitude, Double longitude) {
 
         // api(Nearby search) request 생성
         SearchNearbyRequest request = SearchNearbyRequest.newBuilder()
-                .setLocationRestriction(
-                        SearchNearbyRequest.LocationRestriction.newBuilder()
-                                .setCircle(Circle.newBuilder()
-                                        .setCenter(LatLng.newBuilder().setLatitude(latitude).setLongitude(longitude).build())
-                                        .setRadius(2000.0)
+                .setLocationRestriction(SearchNearbyRequest.LocationRestriction.newBuilder()
+                        .setCircle(Circle.newBuilder()
+                                .setCenter(LatLng.newBuilder()
+                                        .setLatitude(latitude)
+                                        .setLongitude(longitude)
                                         .build())
-                                .build()
-                )
+                                .setRadius(2000.0)
+                                .build())
+                        .build())
                 .addIncludedTypes("veterinary_care") // 동물병원 필터링
                 .setMaxResultCount(5)
                 .setLanguageCode("ko")
                 .build();
 
-        return placesClient.searchNearbyCallable()
-                .call(request, fieldMaskContext(searchFields));
+        return placesClient.searchNearbyCallable().call(request, fieldMaskContext(searchFields));
     }
 
     private PhotoMedia getPhotoResponse(String photoName, Integer maxHeight) {
 
-        String photoMediaName = photoName.endsWith("/media")
-                ? photoName
-                : photoName + "/media";
+        String photoMediaName = photoName.endsWith("/media") ? photoName : photoName + "/media";
 
         GetPhotoMediaRequest request = GetPhotoMediaRequest.newBuilder()
                 .setName(photoMediaName)
@@ -215,8 +209,7 @@ public class HospitalService {
                 .setLanguageCode("ko")
                 .build();
 
-        return placesClient.getPlaceCallable()
-                .call(request, fieldMaskContext(detailFields));
+        return placesClient.getPlaceCallable().call(request, fieldMaskContext(detailFields));
     }
 
     private ApiCallContext fieldMaskContext(String fieldMask) {

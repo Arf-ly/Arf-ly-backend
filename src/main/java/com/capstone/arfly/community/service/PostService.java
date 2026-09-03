@@ -33,7 +33,6 @@ import com.capstone.arfly.community.repository.PostLikeRepository;
 import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.repository.MemberRepository;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,6 +45,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -69,33 +69,35 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
 
     private static final String TOGGLE_LIKE_SCRIPT =
-            "local added = redis.call('SADD', KEYS[1], ARGV[1]) " +
-                    "if added == 0 then " +
-                    "  redis.call('SREM', KEYS[1], ARGV[1]) " +
-                    "  redis.call('DECR', KEYS[2]) " +
-                    "  return -1 " +
-                    "else " +
-                    "  redis.call('INCR', KEYS[2]) " +
-                    "  return 1 " +
-                    "end";
+            "local added = redis.call('SADD', KEYS[1], ARGV[1]) " + "if added == 0 then "
+                    + "  redis.call('SREM', KEYS[1], ARGV[1]) "
+                    + "  redis.call('DECR', KEYS[2]) "
+                    + "  return -1 "
+                    + "else "
+                    + "  redis.call('INCR', KEYS[2]) "
+                    + "  return 1 "
+                    + "end";
     private static final DefaultRedisScript<Long> script = new DefaultRedisScript<>(TOGGLE_LIKE_SCRIPT, Long.class);
-
 
     @Transactional
     public void createComment(Long postId, long userId, CommentRequestDto requestDto) {
-        //게시물 존재 여부 확인
+        // 게시물 존재 여부 확인
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         Member commenter = memberRepository.getReferenceById(userId);
         Set<Long> mentionIds = requestDto.getMentionedUserIds();
         boolean hasMentions = mentionIds != null && !mentionIds.isEmpty();
 
-        //내용 내 id 목록과 mentionIdList 일치 여부 확인
+        // 내용 내 id 목록과 mentionIdList 일치 여부 확인
         validateContentMentions(requestDto.getContent(), mentionIds);
 
-        Comment newComment = Comment.builder().post(post).member(commenter).content(requestDto.getContent()).build();
+        Comment newComment = Comment.builder()
+                .post(post)
+                .member(commenter)
+                .content(requestDto.getContent())
+                .build();
         commentRepository.save(newComment);
 
-        //metionUserIds에 존재하는 id가 존재하는지 여부 확인
+        // metionUserIds에 존재하는 id가 존재하는지 여부 확인
         if (hasMentions) {
             List<Member> mentionedUsers = memberRepository.findAllById(mentionIds);
 
@@ -111,14 +113,13 @@ public class PostService {
                     .toList();
             commentMentionRepository.saveAll(commentMentionList);
 
-            //푸시 알람을 위한 Event 생성
-            eventPublisher.publishEvent(new CommentCreatedEvent(this,
-                    post, commenter, newComment, mentionIds));
+            // 푸시 알람을 위한 Event 생성
+            eventPublisher.publishEvent(new CommentCreatedEvent(this, post, commenter, newComment, mentionIds));
         }
     }
 
     private void validateContentMentions(String content, Set<Long> mentionIds) {
-        //본문에서 멘션 ID만 추출
+        // 본문에서 멘션 ID만 추출
         Set<Long> extractedIds = new HashSet<>();
         Set<Long> mentionIdSet = mentionIds == null ? new HashSet<>() : new HashSet<>(mentionIds);
         Pattern pattern = Pattern.compile("@\\[.*?\\]\\(user:(\\d+)\\)");
@@ -132,26 +133,27 @@ public class PostService {
         }
     }
 
-
     @Transactional(readOnly = true)
     public PostDetailResponseDto getPostDetail(Long postId, Long userId) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        List<CommentDetailResponseDto> commentList = commentRepository.findCommentsWithAuthorByPostId(
-                post.getId());
+        List<CommentDetailResponseDto> commentList = commentRepository.findCommentsWithAuthorByPostId(post.getId());
         List<PostDetailFileDto> fileList = postImageRepository.findPostDetailFileByPostId(post.getId());
-        List<FileDto> fileDtoList = fileList.stream().map(file ->
-                        FileDto.builder().fileId(file.fileId()).fileUrl(s3Uploader.getPublicUrl(file.fileKey())).build())
+        List<FileDto> fileDtoList = fileList.stream()
+                .map(file -> FileDto.builder()
+                        .fileId(file.fileId())
+                        .fileUrl(s3Uploader.getPublicUrl(file.fileKey()))
+                        .build())
                 .collect(Collectors.toList());
 
-        PostDetailResponseDto response = PostDetailResponseDto.makePostDetailResponse(post, commentList,
-                fileDtoList, userId);
+        PostDetailResponseDto response =
+                PostDetailResponseDto.makePostDetailResponse(post, commentList, fileDtoList, userId);
 
         return response;
     }
 
     public void createPost(long userId, PostCreateRequestDto requestDto, List<MultipartFile> files) {
         Member author = memberRepository.getReferenceById(userId);
-        //게시글 생성 및 저장
+        // 게시글 생성 및 저장
         Post newPost = Post.builder()
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
@@ -159,24 +161,26 @@ public class PostService {
                 .build();
 
         if (files != null && !files.isEmpty()) {
-            //File MetaData 생성
+            // File MetaData 생성
             List<FileDetailDto> fileDetailList = files.stream()
-                    .map(file -> s3Uploader.makeMetaData(file, S3DIRNAME.POST_IMAGE.name())).toList();
+                    .map(file -> s3Uploader.makeMetaData(file, S3DIRNAME.POST_IMAGE.name()))
+                    .toList();
 
             // S3 Upload
-            List<String> keys = fileDetailList.stream().map(FileDetailDto::getKey).toList();
+            List<String> keys =
+                    fileDetailList.stream().map(FileDetailDto::getKey).toList();
             s3Uploader.uploadFiles(keys, files);
             try {
                 postWriter.savePostAndImages(newPost, fileDetailList);
-            } catch (Exception e) {
+            } catch (DataAccessException e) {
+                log.error("게시글 저장 실패로 업로드된 파일을 정리합니다.", e);
                 keys.forEach(s3Uploader::deleteFile);
+                throw new BusinessException(ErrorCode.POST_SAVE_FAILED);
             }
         } else {
             postWriter.savePost(newPost);
         }
-
     }
-
 
     @Transactional
     public void toggleLike(Long postId, long userId) {
@@ -184,10 +188,7 @@ public class PostService {
         String countKey = "post:like:" + postId;
         String userSetKey = "post:like:users:" + postId;
 
-        Long result = redisTemplate.execute(
-                script, List.of(userSetKey, countKey),
-                String.valueOf(userId)
-        );
+        Long result = redisTemplate.execute(script, List.of(userSetKey, countKey), String.valueOf(userId));
         if (result == 1L) {
             eventPublisher.publishEvent(new PostLikeEvent(this, postId, userId, LikeEventType.LIKE));
         } else {
@@ -199,12 +200,12 @@ public class PostService {
     public void deletePost(Long postId, long userId) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
 
-        //게시글에 대한 삭제 권한 없음
+        // 게시글에 대한 삭제 권한 없음
         if (post.getMember().getId() != userId) {
             throw new PostAuthorMisMatchException();
         }
 
-        //언급 알림 삭제
+        // 언급 알림 삭제
         commentMentionRepository.deleteByPostId(postId);
 
         // 댓글 삭제
@@ -212,43 +213,47 @@ public class PostService {
         // 좋아요 삭제
         postLikeRepository.deleteByPostId(postId);
 
-        //게시물 관련 파일 삭제 예약 후 이미지 삭제
+        // 게시물 관련 파일 삭제 예약 후 이미지 삭제
         List<File> files = postImageRepository.findFileByPostId(postId);
         files.forEach(File::markAsDeleted);
         postImageRepository.deleteByPostId(postId);
 
-        //게시물 삭제
+        // 게시물 삭제
         postRepository.deleteById(postId);
 
-        //redis Key 삭제
+        // redis Key 삭제
         try {
             redisTemplate.delete(List.of("post:like:" + postId, "post:like:users:" + postId));
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.warn("Redis 게시글 좋아요 키 삭제 실패: postId={}", postId, e);
         }
     }
 
-
-    public void updatePost(Long postId, long userId, PostUpdateRequestDto requestDto,
-                           List<MultipartFile> files) {
+    public void updatePost(Long postId, long userId, PostUpdateRequestDto requestDto, List<MultipartFile> files) {
 
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         if (post.getMember().getId() != userId) {
             throw new PostAuthorMisMatchException();
         }
         if (files != null && !files.isEmpty()) {
-            //File MetaData 생성
+            // File MetaData 생성
             List<FileDetailDto> fileDetailList = files.stream()
-                    .map(file -> s3Uploader.makeMetaData(file, S3DIRNAME.POST_IMAGE.name())).toList();
+                    .map(file -> s3Uploader.makeMetaData(file, S3DIRNAME.POST_IMAGE.name()))
+                    .toList();
 
             // S3 Upload
-            List<String> keys = fileDetailList.stream().map(FileDetailDto::getKey).toList();
+            List<String> keys =
+                    fileDetailList.stream().map(FileDetailDto::getKey).toList();
             s3Uploader.uploadFiles(keys, files);
             try {
                 postWriter.updatePostAndImages(postId, fileDetailList, requestDto);
-            } catch (Exception e) {
+            } catch (BusinessException e) {
                 keys.forEach(s3Uploader::deleteFile);
                 throw e;
+            } catch (DataAccessException e) {
+                log.error("게시글 수정 실패로 업로드된 파일을 정리합니다.", e);
+                keys.forEach(s3Uploader::deleteFile);
+                throw new BusinessException(ErrorCode.POST_SAVE_FAILED);
             }
         } else {
             postWriter.updatePost(postId, requestDto);
@@ -309,7 +314,8 @@ public class PostService {
         if (cursor == null) {
             return null;
         }
-        return postRepository.findById(cursor)
+        return postRepository
+                .findById(cursor)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND))
                 .getLikeCount();
     }
@@ -334,40 +340,41 @@ public class PostService {
     }
 
     // 공통 DTO 응답 생성 메서드
-    private PostListResponseDto createPostListResponse(List<Post> posts, boolean hasNext, Long nextCursor, int size,
-                                                       Long totalCount) {
+    private PostListResponseDto createPostListResponse(
+            List<Post> posts, boolean hasNext, Long nextCursor, int size, Long totalCount) {
         List<PostImage> allPostImages = postImageRepository.findAllByPostInWithFile(posts);
 
         Map<Long, List<PostImage>> imageMap = allPostImages.stream()
                 .collect(Collectors.groupingBy(pi -> pi.getPost().getId()));
 
-        List<PostListResponseDto.PostSummary> postSummaries = posts.stream().map(post -> {
-            List<PostImage> postImages = imageMap.getOrDefault(post.getId(), Collections.emptyList());
-            List<File> postFiles = postImages.stream()
-                    .map(PostImage::getFile)
-                    .filter(file -> !file.getDeleted()) // 👈 이 한 줄로 삭제된 파일은 리스트에서 투명인간이 됩니다.
-                    .toList();
+        List<PostListResponseDto.PostSummary> postSummaries = posts.stream()
+                .map(post -> {
+                    List<PostImage> postImages = imageMap.getOrDefault(post.getId(), Collections.emptyList());
+                    List<File> postFiles = postImages.stream()
+                            .map(PostImage::getFile)
+                            .filter(file -> !file.getDeleted()) // 👈 이 한 줄로 삭제된 파일은 리스트에서 투명인간이 됩니다.
+                            .toList();
 
-            List<String> thumbnails = postFiles.stream()
-                    .limit(3)
-                    .map(file -> s3Uploader.getPublicUrl(file.getFileKey()))
-                    .toList();
+                    List<String> thumbnails = postFiles.stream()
+                            .limit(3)
+                            .map(file -> s3Uploader.getPublicUrl(file.getFileKey()))
+                            .toList();
 
-            boolean hasVideo = postFiles.stream()
-                    .anyMatch(file -> file.getFileType() == FileType.VIDEO);
+                    boolean hasVideo = postFiles.stream().anyMatch(file -> file.getFileType() == FileType.VIDEO);
 
-            return PostListResponseDto.PostSummary.builder()
-                    .id(post.getId())
-                    .title(post.getTitle())
-                    .content(post.getContent())
-                    .thumbnails(thumbnails)
-                    .hasVideo(hasVideo)
-                    .totalMediaCount(postFiles.size())
-                    .likeCount(post.getLikeCount())
-                    .createdAt(formatRelativeTime(post.getCreatedAt()))
-                    .nickname(post.getMember().getNickName())
-                    .build();
-        }).toList();
+                    return PostListResponseDto.PostSummary.builder()
+                            .id(post.getId())
+                            .title(post.getTitle())
+                            .content(post.getContent())
+                            .thumbnails(thumbnails)
+                            .hasVideo(hasVideo)
+                            .totalMediaCount(postFiles.size())
+                            .likeCount(post.getLikeCount())
+                            .createdAt(formatRelativeTime(post.getCreatedAt()))
+                            .nickname(post.getMember().getNickName())
+                            .build();
+                })
+                .toList();
 
         return PostListResponseDto.builder()
                 .posts(postSummaries)
@@ -379,9 +386,4 @@ public class PostService {
                         .build())
                 .build();
     }
-
-
 }
-
-
-

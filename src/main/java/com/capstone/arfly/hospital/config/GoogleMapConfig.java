@@ -4,14 +4,13 @@ import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.maps.GeoApiContext;
 import com.google.maps.places.v1.PlacesClient;
 import com.google.maps.places.v1.PlacesSettings;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @Slf4j
@@ -22,20 +21,14 @@ public class GoogleMapConfig {
     @Bean(destroyMethod = "close")
     public PlacesClient placesClient() throws IOException {
 
-        PlacesSettings settings = null;
-
-        try {
-            settings = PlacesSettings.newBuilder()
-                    .setCredentialsProvider(NoCredentialsProvider.create())
-                    .setHeaderProvider(() -> {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("X-Goog-Api-Key", apiKey);
-                        return headers;
-                    }).build();
-        }catch (Exception e){
-            log.error("구글 맵 초기 설정 오류 발생! 원인 : {}", e.getMessage());
-            throw new RuntimeException("구글 맵 클라이언트를 생성할 수 없습니다.", e);
-        }
+        PlacesSettings settings = PlacesSettings.newBuilder()
+                .setCredentialsProvider(NoCredentialsProvider.create())
+                .setHeaderProvider(() -> {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("X-Goog-Api-Key", apiKey);
+                    return headers;
+                })
+                .build();
 
         log.info("구글 맵 api 초기 설정 완료!");
 
@@ -44,8 +37,6 @@ public class GoogleMapConfig {
 
     @Bean
     public GeoApiContext geoApiContext() {
-        return new GeoApiContext.Builder()
-                .apiKey(apiKey)
-                .build();
+        return new GeoApiContext.Builder().apiKey(apiKey).build();
     }
 }
