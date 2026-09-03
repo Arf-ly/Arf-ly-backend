@@ -1,10 +1,36 @@
 server:
   forward-headers-strategy: native
 
+logging:
+  file:
+    name: logs/app.log
+  structured:
+    format:
+      file: ecs
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 500MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 file:
   max-image-size: 50MB
 
 spring:
+  application:
+    name: arf-ly-backend
   datasource:
     url: jdbc:postgresql://localhost:5433/${DB_NAME}
     username: ${DB_USER}
