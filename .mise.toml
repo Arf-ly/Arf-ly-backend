@@ -23,3 +23,7 @@ run = "./gradlew spotlessCheck checkstyleMain"
 [tasks.test]
 description = "테스트 실행"
 run = "./gradlew test"
+
+[tasks.monitoring]
+description = "관측 스택 실행 (Prometheus/Grafana/Loki/Alloy)"
+run = "docker compose up -d prometheus grafana loki alloy"
