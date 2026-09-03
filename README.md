@@ -10,25 +10,14 @@
 
 ## 목차
 
-1. [프로젝트 기간](#프로젝트-기간)
-2. [배포](#배포)
-3. [팀 구성](#팀-구성)
-4. [서비스 소개](#서비스-소개)
-5. [핵심 기능](#핵심-기능)
-6. [서비스 화면](#서비스-화면)
-7. [기술 스택](#기술-스택)
-8. [ERD](#erd)
-9. [아키텍처](#아키텍처)
-10. [프로젝트 파일 구조](#프로젝트-파일-구조)
-11. [향후 개발 계획](#향후-개발-계획)
-
-## 프로젝트 기간
-
-**2026년 03월 ~ 진행 중**
-
-## 배포
-
-**[Arf-ly 접속하기](https://arf-ly-web.vercel.app/)**
+1. [팀 구성](#팀-구성)
+2. [서비스 소개](#서비스-소개)
+3. [핵심 기능](#핵심-기능)
+4. [기술 스택](#기술-스택)
+5. [ERD](#erd)
+6. [아키텍처](#아키텍처)
+7. [향후 개발 계획](#향후-개발-계획)
+8. [개발 문서](#개발-문서)
 
 ## 팀 구성
 
@@ -131,154 +120,24 @@ Arf-ly는 **AI 피부 질환 진단**과 **IoT 웨어러블 기기**를 결합�
 | 동물병원 조회     | 등록 주소 기반 주변 동물병원 목록 및 상세 정보 제공                           |
 | 커뮤니티        | 반려동물 건강 관련 고민과 경험을 다른 보호자와 공유                            |
 
-## 서비스 화면
-
-### 로그인
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/시작화면.png" height="350"/></td>
-    <td align="right"><img src="assets/로그인.PNG" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">시작 화면</td>
-    <td align="center">일반 로그인</td>
-  </tr>
-</table>
-
-### 메인
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/메인화면.PNG" width="228" height="350"/></td>
-    <td align="right"><img src="assets/메인화면%20ai진단결과.PNG" width="228" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">메인 화면</td>
-    <td align="center">AI 진단 결과 리스트</td>
-  </tr>
-</table>
-
-### AI 피부 질환 진단
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/ai 피부진단 동물 선택.PNG" height="350"/></td>
-    <td align="right"><img src="assets/ai 피부진단 결과 리포트.PNG" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">동물 선택</td>
-    <td align="center">진단 결과 리포트</td>
-  </tr>
-</table>
-
-### 산책 대시보드
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/산책 대시보드_활동량.PNG" height="350"/></td>
-    <td align="right"><img src="assets/산책 대시보드_산책거리 2.PNG" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">활동점수</td>
-    <td align="center">산책 거리</td>
-  </tr>
-</table>
-
-### 동물병원 지도
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/동물지도 병원_리스트.PNG" height="350"/></td>
-    <td align="right"><img src="assets/동물지도 병원_상세정보.PNG" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">동물병원 리스트</td>
-    <td align="center">동물병원 상세 정보</td>
-  </tr>
-</table>
-
-### 커뮤니티
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/커뮤니티 리스트.PNG" height="350"/></td>
-    <td align="right"><img src="assets/커뮤니티 상세 정보.PNG" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">커뮤니티 리스트</td>
-    <td align="center">커뮤니티 상세 정보</td>
-  </tr>
-</table>
-
-### 마이페이지
-
-<table width="100%">
-  <tr>
-    <td align="left"><img src="assets/마이페이지.PNG" height="350"/></td>
-    <td align="right"><img src="assets/마이페이지 복약 알림_서비스.PNG" height="350"/></td>
-  </tr>
-  <tr>
-    <td align="center">마이페이지</td>
-    <td align="center">복약 알림 서비스</td>
-  </tr>
-</table>
-
 ## 기술 스택
 
-**Backend**
-
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
-![AWS S3](https://img.shields.io/badge/AWS_S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
-
-| 기술         | 사용 목적                                                                       |
-|------------|-----------------------------------------------------------------------------|
-| PostgreSQL | 회원·반려동물·커뮤니티·진단 등 모든 도메인의 주 데이터베이스                                          |
-| Redis      | JWT Refresh Token 저장 및 만료 관리 / 커뮤니티 최근 검색어 캐싱 / 게시글 좋아요 수 캐싱 후 5분 주기 DB 동기화 |
-| Firebase   | FCM을 통한 복약 알림·댓글 멘션 푸시 알림 발송 / Firebase Auth 기반 전화번호 인증                     |
-| AWS S3     | 반려동물 프로필·게시글·AI 진단 이미지 및 영상 저장                                              
-
-**AI**
-
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
-
-**Frontend**
-
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-
-**IoT**
-
-![Raspberry Pi](https://img.shields.io/badge/Raspberry_Pi-C51A4A?style=for-the-badge&logo=raspberry-pi&logoColor=white)
-
-**Infra**
-
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![NGINX](https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
-
-**문서 작성**
-
-![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)
-![한컴독스](https://img.shields.io/badge/한컴독스-005BAC?style=for-the-badge&logoColor=white)
-![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=for-the-badge&logo=google-sheets&logoColor=white)
-
-**협업 툴**
-
-![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-
-**디자인 및 설계**
-
-![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
-
-**버전 관리**
-
-![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+| 기술 | 설명 |
+|---|---|
+| Java, Spring Boot | 백엔드 서버 |
+| PostgreSQL | 회원·반려동물·커뮤니티·진단 등 모든 도메인의 주 데이터베이스 |
+| Redis | JWT Refresh Token 저장 및 만료 관리 / 커뮤니티 최근 검색어 캐싱 / 게시글 좋아요 수 캐싱 후 5분 주기 DB 동기화 |
+| Firebase | FCM을 통한 복약 알림·댓글 멘션 푸시 알림 발송 / Firebase Auth 기반 전화번호 인증 |
+| AWS S3 | 반려동물 프로필·게시글·AI 진단 이미지 및 영상 저장 |
+| Spotless | palantir-java-format 기반 자동 코드 포맷팅 |
+| Checkstyle | 런타임 버그로 이어질 수 있는 코드 패턴 검사 |
+| Prometheus, Grafana | 애플리케이션 메트릭 수집 및 시각화 |
+| Loki, Grafana Alloy | 로그 수집 및 검색 |
+| mise | Java/Node/lefthook/Redis 등 개발 환경 버전 관리 |
+| lefthook | Git 훅 매니저 |
+| commitlint | 커밋 메시지 컨벤션 검증 |
+| AWS EC2, Docker | 배포 서버 및 컨테이너 실행 환경 |
+| GitHub Actions | CI/CD 파이프라인 |
 
 ## ERD
 
@@ -292,125 +151,6 @@ Arf-ly는 **AI 피부 질환 진단**과 **IoT 웨어러블 기기**를 결합�
   <img src="assets/architecture.png" width="800"/>
 </p>
 
-## 프로젝트 파일 구조
-
-<details>
-<summary><b>Backend</b></summary>
-
-<pre>
-src
-  └─ main
-       └─ java
-            └─ com.capstone.arfly
-                 ├─ ad
-                 │    └─ domain
-                 ├─ common
-                 │    ├─ auth
-                 │    ├─ config
-                 │    ├─ constant
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ exception
-                 │    └─ util
-                 ├─ community
-                 │    ├─ controller
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ repository
-                 │    └─ service
-                 ├─ diagnosis
-                 │    ├─ controller
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ repository
-                 │    └─ service
-                 ├─ hospital
-                 │    ├─ controller
-                 │    ├─ dto
-                 │    └─ service
-                 ├─ iot
-                 │    ├─ controller
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ repository
-                 │    └─ service
-                 ├─ member
-                 │    ├─ controller
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ repository
-                 │    └─ service
-                 ├─ notification
-                 │    ├─ controller
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ repository
-                 │    └─ service
-                 ├─ pet
-                 │    ├─ controller
-                 │    ├─ domain
-                 │    ├─ dto
-                 │    ├─ repository
-                 │    └─ service
-                 └─ walkRecord
-                      ├─ controller
-                      ├─ domain
-                      ├─ dto
-                      ├─ repository
-                      └─ service
-</pre>
-
-</details>
-
-<details>
-<summary><b>Frontend</b></summary>
-
-<pre>
-src
-  ├─ assets
-  │    ├─ bottom_tab_bar
-  │    ├─ community
-  │    ├─ home
-  │    │    ├─ Camera
-  │    │    ├─ diseaseCheck
-  │    │    ├─ walkedResult
-  │    │    └─ weeklyActive
-  │    ├─ login
-  │    │    ├─ social
-  │    │    └─ system
-  │    ├─ map
-  │    ├─ mypage
-  │    │    ├─ IotRegistration
-  │    │    ├─ MedicineAlarm
-  │    │    ├─ PetDetail
-  │    │    └─ UserProfile
-  │    ├─ pet
-  │    │    └─ register
-  │    └─ terms
-  ├─ components
-  │    └─ BottomTabBar
-  ├─ pages
-  │    ├─ auth
-  │    │    ├─ Find
-  │    │    ├─ Login
-  │    │    └─ Signup
-  │    ├─ community
-  │    ├─ home
-  │    │    └─ data
-  │    ├─ map
-  │    ├─ mypage
-  │    │    ├─ data
-  │    │    └─ IotRegisteration
-  │    └─ pet
-  ├─ style
-  ├─ App.jsx
-  ├─ firebase.js
-  ├─ index.css
-  └─ main.jsx
-</pre>
-
-</details>
-
 ## 향후 개발 계획
 
 | 기능           | 설명                                          |
@@ -418,3 +158,7 @@ src
 | AI 모델 정확도 개선 | 모델 변경을 통한 피부 질환 진단 정확도 향상                   |
 | 실시간 피부 진단    | Jetson Nano + 웹캠 기반 실시간 객체 탐지 및 피부 진단 기능 도입 |
 | 관리자 기능      | 회원·콘텐츠·광고 관리 및 서비스 통계 조회 기능 제공               |
+
+## 개발 문서
+
+브랜치 전략, 커밋/코드 컨벤션, 폴더 구조, 개발 환경 세팅, 모니터링, 배포 구조 등 서버 개발 온보딩에 필요한 기술 문서는 [Wiki](https://github.com/Arf-ly/Arf-ly-backend/wiki)에서 확인할 수 있습니다.
