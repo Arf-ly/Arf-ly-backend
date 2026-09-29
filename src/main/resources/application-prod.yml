@@ -1,7 +1,7 @@
 # Product Develop ENV
 
 firebase:
-  key-path: ${FIREBASE_KEY_PATH}
+  key-path: ${FIREBASE_PROD_KEY_PATH}
 
 
 spring:
