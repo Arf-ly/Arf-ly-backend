@@ -78,7 +78,8 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "https://arf-ly-web.vercel.app",
-                "http://192.168.0.3:5173"));
+                "http://192.168.0.3:5173",
+                "https://unmythologically-unimparted-daleyza.ngrok-free.dev"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowCredentials(true);
