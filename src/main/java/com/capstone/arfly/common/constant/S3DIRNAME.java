@@ -1,15 +1,14 @@
 package com.capstone.arfly.common.constant;
 
-
 public enum S3DIRNAME {
     POST_IMAGE("PostImage"),
     AD_IMAGE("AdImage"),
-    DIAGNOSIS_IMAGE("DiagnosisImage");
-
+    DIAGNOSIS_IMAGE("DiagnosisImage"),
+    DOCTOR_LICENSE("DoctorLicense");
 
     private final String dirName;
 
-    S3DIRNAME(String dirName){
+    S3DIRNAME(String dirName) {
         this.dirName = dirName;
     }
 }

@@ -1,0 +1,87 @@
+package com.capstone.arfly.admin.controller;
+
+import com.capstone.arfly.admin.dto.DoctorVerificationDetailResponseDto;
+import com.capstone.arfly.admin.dto.DoctorVerificationListResponseDto;
+import com.capstone.arfly.admin.dto.DoctorVerificationRejectRequestDto;
+import com.capstone.arfly.admin.service.DoctorVerificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/admin/verifications")
+public class AdminDoctorVerificationController {
+    private final DoctorVerificationService doctorVerificationService;
+
+    @Operation(summary = "[관리자] 의사 인증 신청 목록 조회", description = "심사 대기 중인 의사 인증 신청 목록을 오래된 순으로 조회합니다. 관리자만 접근할 수 있습니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "조회 성공 (신청이 없으면 빈 배열)"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음")
+            })
+    @GetMapping
+    public ResponseEntity<List<DoctorVerificationListResponseDto>> getPendingVerifications() {
+        return ResponseEntity.ok(doctorVerificationService.getPendingVerifications());
+    }
+
+    @Operation(
+            summary = "[관리자] 의사 인증 신청 상세 조회",
+            description = "인증 신청자의 닉네임, 전화번호, 신청 일시와 첨부한 면허증 사진을 조회합니다. 사진 URL은 10분간 유효합니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "조회 성공"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 인증 신청"),
+                @ApiResponse(responseCode = "500", description = "서버 ERROR(EX.S3 서명 URL 생성 실패)")
+            })
+    @GetMapping("/{verificationId}")
+    public ResponseEntity<DoctorVerificationDetailResponseDto> getVerificationDetail(
+            @PathVariable Long verificationId) {
+        return ResponseEntity.ok(doctorVerificationService.getVerificationDetail(verificationId));
+    }
+
+    @Operation(summary = "[관리자] 의사 인증 승인", description = "심사 대기 중인 인증 신청을 승인하고 신청자의 권한을 DOCTOR로 변경합니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "승인 성공"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 인증 신청"),
+                @ApiResponse(responseCode = "409", description = "이미 승인 또는 반려된 신청")
+            })
+    @PatchMapping("/{verificationId}/approve")
+    public ResponseEntity<Void> approve(@PathVariable Long verificationId) {
+        doctorVerificationService.approve(verificationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "[관리자] 의사 인증 반려", description = "심사 대기 중인 인증 신청을 반려 사유와 함께 반려합니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "반려 성공"),
+                @ApiResponse(responseCode = "400", description = "반려 사유 누락 또는 255자 초과"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 인증 신청"),
+                @ApiResponse(responseCode = "409", description = "이미 승인 또는 반려된 신청")
+            })
+    @PatchMapping("/{verificationId}/reject")
+    public ResponseEntity<Void> reject(
+            @PathVariable Long verificationId, @Valid @RequestBody DoctorVerificationRejectRequestDto requestDto) {
+        doctorVerificationService.reject(verificationId, requestDto.getReason());
+        return ResponseEntity.noContent().build();
+    }
+}

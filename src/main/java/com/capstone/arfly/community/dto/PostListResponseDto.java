@@ -1,18 +1,14 @@
 package com.capstone.arfly.community.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Builder
 @Schema(description = "게시글 목록 조회 응답(무한 스킄롤)")
-public class PostListResponseDto
-{
+public class PostListResponseDto {
 
     @Schema(description = "게시글 목록")
     private List<PostSummary> posts;
@@ -32,7 +28,9 @@ public class PostListResponseDto
         @Schema(description = "게시글 내용 미리보기", example = "산책하다가 갑자기 멈춰서 한참을 킁킁거리길래...")
         private String content;
 
-        @Schema(description = "썸네일 이미지 URL 목록 (최대 3개)", example = "[\"https://s3.../img1.jpg\", \"https://s3.../img2.jpg\"]")
+        @Schema(
+                description = "썸네일 이미지 URL 목록 (최대 3개)",
+                example = "[\"https://s3.../img1.jpg\", \"https://s3.../img2.jpg\"]")
         private List<String> thumbnails;
 
         @Schema(description = "비디오 파일 포함 여부 (true면 프론트에서 재생 아이콘 표시)", example = "true")
@@ -49,6 +47,9 @@ public class PostListResponseDto
 
         @Schema(description = "작성자 닉네임", example = "김민준")
         private String nickname;
+
+        @Schema(description = "작성자 수의사 여부 (true면 프론트에서 수의사 뱃지 표시)", example = "false")
+        private boolean doctor;
     }
 
     @Getter

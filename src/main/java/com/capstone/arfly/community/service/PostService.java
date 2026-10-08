@@ -32,6 +32,7 @@ import com.capstone.arfly.community.repository.PostImageRepository;
 import com.capstone.arfly.community.repository.PostLikeRepository;
 import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.domain.Member;
+import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.repository.MemberRepository;
 import java.time.Duration;
 import java.util.Collections;
@@ -372,6 +373,7 @@ public class PostService {
                             .likeCount(post.getLikeCount())
                             .createdAt(formatRelativeTime(post.getCreatedAt()))
                             .nickname(post.getMember().getNickName())
+                            .doctor(post.getMember().getRole() == Role.DOCTOR)
                             .build();
                 })
                 .toList();

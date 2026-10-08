@@ -55,7 +55,16 @@ public enum ErrorCode {
     INVALID_SENSOR_DATA(HttpStatus.BAD_REQUEST, "수신된 센서 데이터 형식이 올바르지 않거나 비어 있습니다.", "INVALID_SENSOR_DATA"),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 진단 리포트가 없습니다.", "REPORT_NOT_FOUND"),
     WALK_NOT_FOUND(HttpStatus.NOT_FOUND, "산책 기록을 찾을 수 없습니다.", "WALK_NOT_FOUND"),
-    TERMS_NOT_AGREED(HttpStatus.FORBIDDEN, "필수 약관 동의가 필요합니다.", "TERMS_NOT_AGREED");
+    TERMS_NOT_AGREED(HttpStatus.FORBIDDEN, "필수 약관 동의가 필요합니다.", "TERMS_NOT_AGREED"),
+
+    ALREADY_DOCTOR(HttpStatus.CONFLICT, "이미 의사 인증이 완료된 회원입니다.", "ALREADY_DOCTOR"),
+    DOCTOR_VERIFICATION_ALREADY_PENDING(
+            HttpStatus.CONFLICT, "이미 심사 대기 중인 의사 인증 신청이 있습니다.", "DOCTOR_VERIFICATION_ALREADY_PENDING"),
+    DOCTOR_VERIFICATION_SAVE_FAILED(
+            HttpStatus.INTERNAL_SERVER_ERROR, "의사 인증 신청 저장 중 오류가 발생했습니다.", "DOCTOR_VERIFICATION_SAVE_FAILED"),
+    DOCTOR_VERIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 의사 인증 신청입니다.", "DOCTOR_VERIFICATION_NOT_FOUND"),
+    DOCTOR_VERIFICATION_ALREADY_REVIEWED(
+            HttpStatus.CONFLICT, "이미 심사가 완료된 의사 인증 신청입니다.", "DOCTOR_VERIFICATION_ALREADY_REVIEWED");
 
     // 예외 상태 코드
     private final HttpStatus httpStatus;
