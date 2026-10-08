@@ -76,4 +76,30 @@ public class DoctorVerificationService {
                 s3Uploader.getUrlFile(verification.getLicenseImage().getFileKey());
         return DoctorVerificationDetailResponseDto.of(verification, licenseImageUrl);
     }
+
+    // 인증 승인
+    @Transactional
+    public void approve(Long verificationId) {
+        DoctorVerification verification = getPendingVerification(verificationId);
+        verification.approve();
+        verification.getMember().changeRole(Role.DOCTOR);
+    }
+
+    // 인증 반려
+    @Transactional
+    public void reject(Long verificationId, String reason) {
+        DoctorVerification verification = getPendingVerification(verificationId);
+        verification.reject(reason);
+    }
+
+    // 심사 대기 중인 신청만 승인/반려 가능
+    private DoctorVerification getPendingVerification(Long verificationId) {
+        DoctorVerification verification = doctorVerificationRepository
+                .findById(verificationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.DOCTOR_VERIFICATION_NOT_FOUND));
+        if (verification.getStatus() != VerificationStatus.PENDING) {
+            throw new BusinessException(ErrorCode.DOCTOR_VERIFICATION_ALREADY_REVIEWED);
+        }
+        return verification;
+    }
 }
