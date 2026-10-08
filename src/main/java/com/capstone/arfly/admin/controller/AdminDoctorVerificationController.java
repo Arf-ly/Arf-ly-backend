@@ -1,5 +1,6 @@
 package com.capstone.arfly.admin.controller;
 
+import com.capstone.arfly.admin.dto.DoctorVerificationDetailResponseDto;
 import com.capstone.arfly.admin.dto.DoctorVerificationListResponseDto;
 import com.capstone.arfly.admin.service.DoctorVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,5 +30,22 @@ public class AdminDoctorVerificationController {
     @GetMapping
     public ResponseEntity<List<DoctorVerificationListResponseDto>> getPendingVerifications() {
         return ResponseEntity.ok(doctorVerificationService.getPendingVerifications());
+    }
+
+    @Operation(
+            summary = "[관리자] 의사 인증 신청 상세 조회",
+            description = "인증 신청자의 닉네임, 전화번호, 신청 일시와 첨부한 면허증 사진을 조회합니다. 사진 URL은 10분간 유효합니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "조회 성공"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 인증 신청"),
+                @ApiResponse(responseCode = "500", description = "서버 ERROR(EX.S3 서명 URL 생성 실패)")
+            })
+    @GetMapping("/{verificationId}")
+    public ResponseEntity<DoctorVerificationDetailResponseDto> getVerificationDetail(
+            @PathVariable Long verificationId) {
+        return ResponseEntity.ok(doctorVerificationService.getVerificationDetail(verificationId));
     }
 }

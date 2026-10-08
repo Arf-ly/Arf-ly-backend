@@ -1,6 +1,8 @@
 package com.capstone.arfly.admin.service;
 
+import com.capstone.arfly.admin.domain.DoctorVerification;
 import com.capstone.arfly.admin.domain.VerificationStatus;
+import com.capstone.arfly.admin.dto.DoctorVerificationDetailResponseDto;
 import com.capstone.arfly.admin.dto.DoctorVerificationListResponseDto;
 import com.capstone.arfly.admin.repository.DoctorVerificationRepository;
 import com.capstone.arfly.common.constant.S3DIRNAME;
@@ -62,5 +64,16 @@ public class DoctorVerificationService {
         return doctorVerificationRepository.findAllByStatusOrderByCreatedAtAsc(VerificationStatus.PENDING).stream()
                 .map(DoctorVerificationListResponseDto::from)
                 .toList();
+    }
+
+    // 인증 신청 상세 조회
+    @Transactional(readOnly = true)
+    public DoctorVerificationDetailResponseDto getVerificationDetail(Long verificationId) {
+        DoctorVerification verification = doctorVerificationRepository
+                .findWithMemberAndLicenseImageById(verificationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.DOCTOR_VERIFICATION_NOT_FOUND));
+        String licenseImageUrl =
+                s3Uploader.getUrlFile(verification.getLicenseImage().getFileKey());
+        return DoctorVerificationDetailResponseDto.of(verification, licenseImageUrl);
     }
 }

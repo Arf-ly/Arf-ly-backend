@@ -61,7 +61,8 @@ public enum ErrorCode {
     DOCTOR_VERIFICATION_ALREADY_PENDING(
             HttpStatus.CONFLICT, "이미 심사 대기 중인 의사 인증 신청이 있습니다.", "DOCTOR_VERIFICATION_ALREADY_PENDING"),
     DOCTOR_VERIFICATION_SAVE_FAILED(
-            HttpStatus.INTERNAL_SERVER_ERROR, "의사 인증 신청 저장 중 오류가 발생했습니다.", "DOCTOR_VERIFICATION_SAVE_FAILED");
+            HttpStatus.INTERNAL_SERVER_ERROR, "의사 인증 신청 저장 중 오류가 발생했습니다.", "DOCTOR_VERIFICATION_SAVE_FAILED"),
+    DOCTOR_VERIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 의사 인증 신청입니다.", "DOCTOR_VERIFICATION_NOT_FOUND");
 
     // 예외 상태 코드
     private final HttpStatus httpStatus;
