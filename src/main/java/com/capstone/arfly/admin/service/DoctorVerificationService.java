@@ -1,6 +1,7 @@
 package com.capstone.arfly.admin.service;
 
 import com.capstone.arfly.admin.domain.VerificationStatus;
+import com.capstone.arfly.admin.dto.DoctorVerificationListResponseDto;
 import com.capstone.arfly.admin.repository.DoctorVerificationRepository;
 import com.capstone.arfly.common.constant.S3DIRNAME;
 import com.capstone.arfly.common.domain.FileType;
@@ -11,10 +12,12 @@ import com.capstone.arfly.common.util.S3Uploader;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.repository.MemberRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -51,5 +54,13 @@ public class DoctorVerificationService {
             s3Uploader.deleteFile(fileDetail.getKey());
             throw new BusinessException(ErrorCode.DOCTOR_VERIFICATION_SAVE_FAILED);
         }
+    }
+
+    // 심사 대기 중인 인증 신청 목록 조회
+    @Transactional(readOnly = true)
+    public List<DoctorVerificationListResponseDto> getPendingVerifications() {
+        return doctorVerificationRepository.findAllByStatusOrderByCreatedAtAsc(VerificationStatus.PENDING).stream()
+                .map(DoctorVerificationListResponseDto::from)
+                .toList();
     }
 }

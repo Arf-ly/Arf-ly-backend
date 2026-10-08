@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/doctor-verifications")
+@RequestMapping("/api/verifications")
 public class DoctorVerificationController {
     private final DoctorVerificationService doctorVerificationService;
 

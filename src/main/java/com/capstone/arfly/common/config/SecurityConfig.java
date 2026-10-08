@@ -64,6 +64,8 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/prometheus")
                         .permitAll()
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
                         .anyRequest()
                         .authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
