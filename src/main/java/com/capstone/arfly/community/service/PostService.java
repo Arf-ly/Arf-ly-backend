@@ -1,5 +1,6 @@
 package com.capstone.arfly.community.service;
 
+import com.capstone.arfly.admin.repository.ReportRepository;
 import com.capstone.arfly.common.constant.S3DIRNAME;
 import com.capstone.arfly.common.domain.File;
 import com.capstone.arfly.common.domain.FileType;
@@ -68,6 +69,7 @@ public class PostService {
     private final PostWriter postWriter;
     private final RedisTemplate<String, String> redisTemplate;
     private final PostLikeRepository postLikeRepository;
+    private final ReportRepository reportRepository;
 
     private static final String TOGGLE_LIKE_SCRIPT =
             "local added = redis.call('SADD', KEYS[1], ARGV[1]) " + "if added == 0 then "
@@ -218,6 +220,9 @@ public class PostService {
         List<File> files = postImageRepository.findFileByPostId(postId);
         files.forEach(File::markAsDeleted);
         postImageRepository.deleteByPostId(postId);
+
+        // 게시물 신고 내역 삭제
+        reportRepository.deleteByPostId(postId);
 
         // 게시물 삭제
         postRepository.deleteById(postId);
