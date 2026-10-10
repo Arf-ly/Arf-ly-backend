@@ -208,6 +208,21 @@ public class PostService {
             throw new PostAuthorMisMatchException();
         }
 
+        removePost(postId);
+    }
+
+    // 관리자 게시글 삭제 (작성자 확인 없이 삭제)
+    @Transactional
+    public void deletePostByAdmin(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new PostNotFoundException();
+        }
+
+        removePost(postId);
+    }
+
+    // 게시글과 연관 데이터 삭제
+    private void removePost(Long postId) {
         // 언급 알림 삭제
         commentMentionRepository.deleteByPostId(postId);
 

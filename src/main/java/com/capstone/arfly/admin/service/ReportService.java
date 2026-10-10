@@ -71,4 +71,16 @@ public class ReportService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_REPORT_NOT_FOUND));
         return ReportDetailResponseDto.from(report);
     }
+
+    // 신고 반려 (처리 대기 중인 신고만 가능)
+    @Transactional
+    public void rejectReport(Long reportId) {
+        Report report = reportRepository
+                .findById(reportId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_REPORT_NOT_FOUND));
+        if (report.getStatus() != ReportStatus.PENDING) {
+            throw new BusinessException(ErrorCode.POST_REPORT_ALREADY_PROCESSED);
+        }
+        report.reject();
+    }
 }

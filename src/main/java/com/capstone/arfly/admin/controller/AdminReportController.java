@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,5 +46,20 @@ public class AdminReportController {
     @GetMapping("/{reportId}")
     public ResponseEntity<ReportDetailResponseDto> getReportDetail(@PathVariable Long reportId) {
         return ResponseEntity.ok(reportService.getReportDetail(reportId));
+    }
+
+    @Operation(summary = "[관리자] 신고 반려", description = "처리 대기 중인 신고를 반려합니다. 반려된 신고는 목록에서 제외됩니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "반려 성공"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 신고"),
+                @ApiResponse(responseCode = "409", description = "이미 처리된 신고")
+            })
+    @PatchMapping("/{reportId}/reject")
+    public ResponseEntity<Void> rejectReport(@PathVariable Long reportId) {
+        reportService.rejectReport(reportId);
+        return ResponseEntity.noContent().build();
     }
 }
