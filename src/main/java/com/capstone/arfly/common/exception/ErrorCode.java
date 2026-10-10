@@ -64,7 +64,18 @@ public enum ErrorCode {
             HttpStatus.INTERNAL_SERVER_ERROR, "의사 인증 신청 저장 중 오류가 발생했습니다.", "DOCTOR_VERIFICATION_SAVE_FAILED"),
     DOCTOR_VERIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 의사 인증 신청입니다.", "DOCTOR_VERIFICATION_NOT_FOUND"),
     DOCTOR_VERIFICATION_ALREADY_REVIEWED(
-            HttpStatus.CONFLICT, "이미 심사가 완료된 의사 인증 신청입니다.", "DOCTOR_VERIFICATION_ALREADY_REVIEWED");
+            HttpStatus.CONFLICT, "이미 심사가 완료된 의사 인증 신청입니다.", "DOCTOR_VERIFICATION_ALREADY_REVIEWED"),
+
+    ALREADY_REPORTED_POST(HttpStatus.CONFLICT, "이미 신고한 게시글입니다.", "ALREADY_REPORTED_POST"),
+    CANNOT_REPORT_OWN_POST(HttpStatus.BAD_REQUEST, "본인이 작성한 게시글은 신고할 수 없습니다.", "CANNOT_REPORT_OWN_POST"),
+    REPORT_DETAIL_REQUIRED(HttpStatus.BAD_REQUEST, "기타 사유로 신고할 때는 상세 사유를 입력해야 합니다.", "REPORT_DETAIL_REQUIRED"),
+    POST_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 신고입니다.", "POST_REPORT_NOT_FOUND"),
+    POST_REPORT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "이미 처리된 신고입니다.", "POST_REPORT_ALREADY_PROCESSED"),
+
+    CANNOT_SUSPEND_ADMIN(HttpStatus.BAD_REQUEST, "관리자 계정은 정지할 수 없습니다.", "CANNOT_SUSPEND_ADMIN"),
+    MEMBER_ALREADY_SUSPENDED(HttpStatus.CONFLICT, "이미 정지된 회원입니다.", "MEMBER_ALREADY_SUSPENDED"),
+    MEMBER_NOT_SUSPENDED(HttpStatus.CONFLICT, "정지 상태인 회원이 아닙니다.", "MEMBER_NOT_SUSPENDED"),
+    WITHDRAWN_MEMBER(HttpStatus.CONFLICT, "탈퇴한 회원입니다.", "WITHDRAWN_MEMBER");
 
     // 예외 상태 코드
     private final HttpStatus httpStatus;
