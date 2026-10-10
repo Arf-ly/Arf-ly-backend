@@ -4,6 +4,7 @@ import com.capstone.arfly.admin.domain.Report;
 import com.capstone.arfly.admin.domain.ReportReason;
 import com.capstone.arfly.admin.domain.ReportStatus;
 import com.capstone.arfly.admin.dto.ReportCreateRequestDto;
+import com.capstone.arfly.admin.dto.ReportDetailResponseDto;
 import com.capstone.arfly.admin.dto.ReportListResponseDto;
 import com.capstone.arfly.admin.repository.ReportRepository;
 import com.capstone.arfly.common.exception.BusinessException;
@@ -60,5 +61,14 @@ public class ReportService {
         return reportRepository.findAllByStatusOrderByCreatedAtAsc(ReportStatus.PENDING).stream()
                 .map(ReportListResponseDto::from)
                 .toList();
+    }
+
+    // 신고 상세 조회
+    @Transactional(readOnly = true)
+    public ReportDetailResponseDto getReportDetail(Long reportId) {
+        Report report = reportRepository
+                .findWithReporterAndPostById(reportId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_REPORT_NOT_FOUND));
+        return ReportDetailResponseDto.from(report);
     }
 }
