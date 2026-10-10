@@ -1,5 +1,6 @@
 package com.capstone.arfly.admin.controller;
 
+import com.capstone.arfly.admin.dto.MemberDetailResponseDto;
 import com.capstone.arfly.admin.dto.MemberListResponseDto;
 import com.capstone.arfly.admin.service.AdminMemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,5 +30,18 @@ public class AdminMemberController {
     @GetMapping
     public ResponseEntity<List<MemberListResponseDto>> getMembers() {
         return ResponseEntity.ok(adminMemberService.getMembers());
+    }
+
+    @Operation(summary = "[관리자] 회원 상세 조회", description = "회원의 기본 정보, 연락처, 게시글·댓글·반려동물 수와 작성한 게시글 목록을 조회합니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "조회 성공"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 회원")
+            })
+    @GetMapping("/{memberId}")
+    public ResponseEntity<MemberDetailResponseDto> getMemberDetail(@PathVariable Long memberId) {
+        return ResponseEntity.ok(adminMemberService.getMemberDetail(memberId));
     }
 }
