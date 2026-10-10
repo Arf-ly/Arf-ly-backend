@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +44,36 @@ public class AdminMemberController {
     @GetMapping("/{memberId}")
     public ResponseEntity<MemberDetailResponseDto> getMemberDetail(@PathVariable Long memberId) {
         return ResponseEntity.ok(adminMemberService.getMemberDetail(memberId));
+    }
+
+    @Operation(summary = "[관리자] 회원 정지", description = "회원을 영구 정지합니다. 관리자 계정과 탈퇴한 회원은 정지할 수 없습니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "정지 성공"),
+                @ApiResponse(responseCode = "400", description = "관리자 계정 정지 시도"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 회원"),
+                @ApiResponse(responseCode = "409", description = "이미 정지된 회원 또는 탈퇴한 회원")
+            })
+    @PatchMapping("/{memberId}/suspend")
+    public ResponseEntity<Void> suspendMember(@PathVariable Long memberId) {
+        adminMemberService.suspendMember(memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "[관리자] 회원 정지 해제", description = "정지된 회원을 정상 상태로 되돌립니다.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "204", description = "정지 해제 성공"),
+                @ApiResponse(responseCode = "401", description = "인증 실패 (토큰 만료 혹은 유효하지 않은 토큰)"),
+                @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+                @ApiResponse(responseCode = "404", description = "존재하지 않는 회원"),
+                @ApiResponse(responseCode = "409", description = "정지 상태가 아닌 회원")
+            })
+    @PatchMapping("/{memberId}/unsuspend")
+    public ResponseEntity<Void> unsuspendMember(@PathVariable Long memberId) {
+        adminMemberService.unsuspendMember(memberId);
+        return ResponseEntity.noContent().build();
     }
 }

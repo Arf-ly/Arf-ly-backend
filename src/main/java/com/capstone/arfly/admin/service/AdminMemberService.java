@@ -8,6 +8,8 @@ import com.capstone.arfly.community.domain.Post;
 import com.capstone.arfly.community.repository.CommentRepository;
 import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.domain.Member;
+import com.capstone.arfly.member.domain.MemberStatus;
+import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.repository.MemberRepository;
 import com.capstone.arfly.pet.repository.PetRepository;
 import java.util.List;
@@ -41,5 +43,35 @@ public class AdminMemberService {
         long commentCount = commentRepository.countByMember(member);
         long petCount = petRepository.countByMemberId(memberId);
         return MemberDetailResponseDto.of(member, commentCount, petCount, posts);
+    }
+
+    // 회원 정지
+    @Transactional
+    public void suspendMember(Long memberId) {
+        Member member = getMember(memberId);
+        if (member.getRole() == Role.ADMIN) {
+            throw new BusinessException(ErrorCode.CANNOT_SUSPEND_ADMIN);
+        }
+        if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            throw new BusinessException(ErrorCode.WITHDRAWN_MEMBER);
+        }
+        if (member.getStatus() == MemberStatus.SUSPENDED) {
+            throw new BusinessException(ErrorCode.MEMBER_ALREADY_SUSPENDED);
+        }
+        member.changeStatus(MemberStatus.SUSPENDED);
+    }
+
+    // 회원 정지 해제
+    @Transactional
+    public void unsuspendMember(Long memberId) {
+        Member member = getMember(memberId);
+        if (member.getStatus() != MemberStatus.SUSPENDED) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_SUSPENDED);
+        }
+        member.changeStatus(MemberStatus.ACTIVE);
+    }
+
+    private Member getMember(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_EXISTS));
     }
 }
