@@ -1,18 +1,19 @@
 package com.capstone.arfly.admin.controller;
 
 import com.capstone.arfly.admin.dto.MemberDetailResponseDto;
-import com.capstone.arfly.admin.dto.MemberListResponseDto;
+import com.capstone.arfly.admin.dto.MemberPageResponseDto;
 import com.capstone.arfly.admin.service.AdminMemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminMemberController {
     private final AdminMemberService adminMemberService;
 
-    @Operation(summary = "[관리자] 회원 목록 조회", description = "전체 회원 목록을 최근 가입 순으로 조회합니다. 정지·탈퇴 회원도 포함되며 status로 구분합니다.")
+    @Operation(
+            summary = "[관리자] 회원 목록 조회",
+            description = "회원 목록을 최근 가입 순으로 페이지 단위로 조회합니다. 정지·탈퇴 회원도 포함되며 status로 구분합니다.")
     @ApiResponses(
             value = {
                 @ApiResponse(responseCode = "200", description = "조회 성공"),
@@ -29,8 +32,10 @@ public class AdminMemberController {
                 @ApiResponse(responseCode = "403", description = "관리자 권한 없음")
             })
     @GetMapping
-    public ResponseEntity<List<MemberListResponseDto>> getMembers() {
-        return ResponseEntity.ok(adminMemberService.getMembers());
+    public ResponseEntity<MemberPageResponseDto> getMembers(
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기 (최대 100)", example = "20") @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(adminMemberService.getMembers(page, size));
     }
 
     @Operation(summary = "[관리자] 회원 상세 조회", description = "회원의 기본 정보, 연락처, 게시글·댓글·반려동물 수와 작성한 게시글 목록을 조회합니다.")

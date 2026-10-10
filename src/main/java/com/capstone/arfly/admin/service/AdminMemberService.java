@@ -1,7 +1,7 @@
 package com.capstone.arfly.admin.service;
 
 import com.capstone.arfly.admin.dto.MemberDetailResponseDto;
-import com.capstone.arfly.admin.dto.MemberListResponseDto;
+import com.capstone.arfly.admin.dto.MemberPageResponseDto;
 import com.capstone.arfly.common.exception.BusinessException;
 import com.capstone.arfly.common.exception.ErrorCode;
 import com.capstone.arfly.community.domain.Post;
@@ -14,6 +14,7 @@ import com.capstone.arfly.member.repository.MemberRepository;
 import com.capstone.arfly.pet.repository.PetRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +22,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AdminMemberService {
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PetRepository petRepository;
 
-    // 전체 회원 목록 조회 (최근 가입 순)
+    // 회원 목록 페이지 조회 (최근 가입 순)
     @Transactional(readOnly = true)
-    public List<MemberListResponseDto> getMembers() {
-        return memberRepository.findAll(Sort.by(Sort.Direction.DESC, "id")).stream()
-                .map(MemberListResponseDto::from)
-                .toList();
+    public MemberPageResponseDto getMembers(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(
+                Math.max(page, 0), Math.min(Math.max(size, 1), MAX_PAGE_SIZE), Sort.by(Sort.Direction.DESC, "id"));
+        return MemberPageResponseDto.from(memberRepository.findAll(pageRequest));
     }
 
     // 회원 상세 조회
