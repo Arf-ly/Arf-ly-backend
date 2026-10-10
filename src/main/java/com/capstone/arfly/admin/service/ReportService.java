@@ -2,7 +2,9 @@ package com.capstone.arfly.admin.service;
 
 import com.capstone.arfly.admin.domain.Report;
 import com.capstone.arfly.admin.domain.ReportReason;
+import com.capstone.arfly.admin.domain.ReportStatus;
 import com.capstone.arfly.admin.dto.ReportCreateRequestDto;
+import com.capstone.arfly.admin.dto.ReportListResponseDto;
 import com.capstone.arfly.admin.repository.ReportRepository;
 import com.capstone.arfly.common.exception.BusinessException;
 import com.capstone.arfly.common.exception.ErrorCode;
@@ -10,6 +12,7 @@ import com.capstone.arfly.common.exception.PostNotFoundException;
 import com.capstone.arfly.community.domain.Post;
 import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.repository.MemberRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -49,5 +52,13 @@ public class ReportService {
         } catch (DataIntegrityViolationException e) {
             throw new BusinessException(ErrorCode.ALREADY_REPORTED_POST);
         }
+    }
+
+    // 처리 대기 중인 신고 목록 조회
+    @Transactional(readOnly = true)
+    public List<ReportListResponseDto> getPendingReports() {
+        return reportRepository.findAllByStatusOrderByCreatedAtAsc(ReportStatus.PENDING).stream()
+                .map(ReportListResponseDto::from)
+                .toList();
     }
 }
