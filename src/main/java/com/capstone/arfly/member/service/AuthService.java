@@ -5,10 +5,13 @@ import com.capstone.arfly.common.constant.RedisConstant;
 import com.capstone.arfly.common.exception.InvalidCredentialsException;
 import com.capstone.arfly.common.exception.InvalidTokenException;
 import com.capstone.arfly.common.exception.PhoneAlreadyException;
+import com.capstone.arfly.common.exception.SuspendedMemberException;
 import com.capstone.arfly.common.exception.UserAlreadyExistsException;
 import com.capstone.arfly.common.exception.UserIdentityMismatchException;
 import com.capstone.arfly.common.exception.UserNotExistsException;
+import com.capstone.arfly.common.exception.WithdrawnMemberException;
 import com.capstone.arfly.member.domain.Member;
+import com.capstone.arfly.member.domain.MemberStatus;
 import com.capstone.arfly.member.domain.SocialType;
 import com.capstone.arfly.member.domain.Terms;
 import com.capstone.arfly.member.domain.UserTermsAgreement;
@@ -49,12 +52,12 @@ public class AuthService {
 
     @Transactional
     public Member create(MemberCreateDto memberCreateDto, PhoneAuthInfoDto phoneAuthInfoDto) {
-        //중복 체크
+        // 중복 체크
         memberRepository.findByUserId(memberCreateDto.getUserId()).ifPresent(m -> {
             throw new UserAlreadyExistsException();
         });
 
-        //토큰 정보 추출
+        // 토큰 정보 추출
         String firebaseUid = phoneAuthInfoDto.getUid();
         String phoneNumber = phoneAuthInfoDto.getPhoneNumber();
 
@@ -108,70 +111,82 @@ public class AuthService {
         return member;
     }
 
-    //엑세스 및 리프레시 토큰 생성 및 반환
+    // 엑세스 및 리프레시 토큰 생성 및 반환
     public TokenResponseDto generateTokens(Member member, boolean termsAgreed) {
-        String accessToken = jwtTokenUtil.createAccessToken(member.getId(), member.getRole().toString(), termsAgreed);
+        // 정지 및 탈퇴 회원 토큰 발급 거부
+        validateMemberStatus(member);
+        String accessToken =
+                jwtTokenUtil.createAccessToken(member.getId(), member.getRole().toString(), termsAgreed);
         String refreshToken = jwtTokenUtil.createRefreshToken(member);
-        TokenResponseDto response = TokenResponseDto.builder().accessToken(accessToken)
-                .refreshToken(refreshToken).build();
+        TokenResponseDto response = TokenResponseDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
         return response;
     }
 
     @Transactional(readOnly = true)
     public Member login(MemberLoginDto memberLoginDto) {
-        //ID 확인
+        // ID 확인
         Optional<Member> optMember = memberRepository.findByUserId(memberLoginDto.getUserId());
         if (optMember.isEmpty()) {
             throw new InvalidCredentialsException();
         }
         Member member = optMember.get();
 
-        //패스워드 검증
+        // 패스워드 검증
         if (!passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword())) {
             throw new InvalidCredentialsException();
         }
         return member;
     }
 
-
     @Transactional(readOnly = true)
     public Member validateRefreshToken(AccessTokenRequestDto accessTokenRequestDto) {
         String token = accessTokenRequestDto.getRefreshToken();
-        //토큰 유효성 검증
+        // 토큰 유효성 검증
         jwtTokenUtil.validateRefreshToken(token);
 
         String memberId = redisTemplate.opsForValue().get(RedisConstant.REFRESH_TOKEN_PREFIX + token);
         if (memberId == null) {
             throw new InvalidTokenException();
         }
-        return memberRepository.findById(Long.parseLong(memberId)).orElseThrow(UserNotExistsException::new);
+        Member member = memberRepository.findById(Long.parseLong(memberId)).orElseThrow(UserNotExistsException::new);
+        // 정지 및 탈퇴 회원 토큰 재발급 거부
+        validateMemberStatus(member);
+        return member;
     }
-
 
     public void logout(LogoutRequestDto logoutRequestDto) {
         String token = logoutRequestDto.getRefreshToken();
-        //토큰 유효성 검증
+        // 토큰 유효성 검증
         jwtTokenUtil.validateRefreshToken(token);
         redisTemplate.delete(RedisConstant.REFRESH_TOKEN_PREFIX + token);
     }
 
-
-    //이미 가입된 사용자인지 확인
+    // 이미 가입된 사용자인지 확인
     @Transactional(readOnly = true)
     public Member getMemberBySocialId(String socialId) {
         return memberRepository.findBySocialId(socialId).orElse(null);
     }
 
-    //Oauth 사용자 생성
+    // Oauth 사용자 생성
     @Transactional
     public Member createOauth(String socialId, String email, SocialType socialType, String nickname) {
         Member member;
         if (nickname == null || nickname.isBlank()) {
             String nickName = generateUniqueNickName();
-            member = Member.builder().userId(email).socialType(socialType).socialId(socialId).nickName(nickName)
+            member = Member.builder()
+                    .userId(email)
+                    .socialType(socialType)
+                    .socialId(socialId)
+                    .nickName(nickName)
                     .build();
         } else {
-            member = Member.builder().userId(email).socialType(socialType).socialId(socialId)
+            member = Member.builder()
+                    .userId(email)
+                    .socialType(socialType)
+                    .socialId(socialId)
                     .nickName(nickname + UUID.randomUUID().toString().substring(0, 8))
                     .build();
         }
@@ -179,8 +194,7 @@ public class AuthService {
         return member;
     }
 
-
-    //전화번호 및 UID 중복 검사
+    // 전화번호 및 UID 중복 검사
     @Transactional(readOnly = true)
     public void verifyPhoneAuthInfo(PhoneAuthInfoDto phoneAuthInfo) {
         Optional<Member> findMember = memberRepository.findByFirebaseUidAndPhoneNumber(
@@ -224,6 +238,15 @@ public class AuthService {
         member.updatePassword(passwordEncoder.encode(newPassword));
     }
 
+    private void validateMemberStatus(Member member) {
+        if (member.getStatus() == MemberStatus.SUSPENDED) {
+            throw new SuspendedMemberException();
+        }
+        if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            throw new WithdrawnMemberException();
+        }
+    }
+
     private String generateUniqueNickName() {
         while (true) {
             String nickName = generatedNickName();
@@ -233,10 +256,7 @@ public class AuthService {
         }
     }
 
-
     private String generatedNickName() {
         return "유저" + UUID.randomUUID().toString().substring(0, 8);
     }
-
-
 }
