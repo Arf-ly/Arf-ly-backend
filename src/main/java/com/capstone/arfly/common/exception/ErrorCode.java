@@ -75,7 +75,8 @@ public enum ErrorCode {
     CANNOT_SUSPEND_ADMIN(HttpStatus.BAD_REQUEST, "관리자 계정은 정지할 수 없습니다.", "CANNOT_SUSPEND_ADMIN"),
     MEMBER_ALREADY_SUSPENDED(HttpStatus.CONFLICT, "이미 정지된 회원입니다.", "MEMBER_ALREADY_SUSPENDED"),
     MEMBER_NOT_SUSPENDED(HttpStatus.CONFLICT, "정지 상태인 회원이 아닙니다.", "MEMBER_NOT_SUSPENDED"),
-    WITHDRAWN_MEMBER(HttpStatus.CONFLICT, "탈퇴한 회원입니다.", "WITHDRAWN_MEMBER");
+    WITHDRAWN_MEMBER(HttpStatus.CONFLICT, "탈퇴한 회원입니다.", "WITHDRAWN_MEMBER"),
+    SUSPENDED_MEMBER(HttpStatus.FORBIDDEN, "정지된 회원입니다.", "SUSPENDED_MEMBER");
 
     // 예외 상태 코드
     private final HttpStatus httpStatus;
