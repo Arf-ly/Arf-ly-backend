@@ -11,6 +11,8 @@ import com.capstone.arfly.jetson.dto.JetsonAlertCreateRequestDto;
 import com.capstone.arfly.jetson.event.JetsonAlertCreatedEvent;
 import com.capstone.arfly.jetson.repository.JetsonAlertRepository;
 import com.capstone.arfly.jetson.repository.JetsonDeviceRepository;
+import com.capstone.arfly.notification.domain.Notification;
+import com.capstone.arfly.notification.repository.NotificationRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,8 +27,9 @@ public class JetsonAlertWriter {
     private final JetsonAlertRepository jetsonAlertRepository;
     private final FileRepository fileRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final NotificationRepository notificationRepository;
 
-    // 사진 메타데이터와 이상 징후 알림 저장, 기기 마지막 접속 시각 갱신
+    // 사진 메타데이터와 이상 징후 알림 저장, 기기 마지막 접속 시각 갱신, 알림 목록 저장
     @Transactional
     public void saveAlert(long deviceId, JetsonAlertCreateRequestDto request, FileDetailDto fileDetail) {
         JetsonDevice device = jetsonDeviceRepository
@@ -40,7 +43,7 @@ public class JetsonAlertWriter {
                 .fileType(fileDetail.getFileType())
                 .build());
 
-        jetsonAlertRepository.save(JetsonAlert.builder()
+        JetsonAlert alert = jetsonAlertRepository.save(JetsonAlert.builder()
                 .device(device)
                 .image(image)
                 .diseaseName(request.getDiseaseName())
@@ -48,6 +51,9 @@ public class JetsonAlertWriter {
                 .build());
 
         device.updateLastSeenAt(LocalDateTime.now());
+
+        notificationRepository.save(Notification.jetsonAlert(
+                device.getOwner(), alert.getId(), request.getDiseaseName(), request.getProbability(), image));
 
         // 푸시 알림은 커밋 후 JetsonAlertEventHandler에서 비동기로 발송
         eventPublisher.publishEvent(new JetsonAlertCreatedEvent(

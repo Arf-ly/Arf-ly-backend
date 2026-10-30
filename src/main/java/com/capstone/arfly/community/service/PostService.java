@@ -35,6 +35,8 @@ import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.domain.Member;
 import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.repository.MemberRepository;
+import com.capstone.arfly.notification.domain.Notification;
+import com.capstone.arfly.notification.repository.NotificationRepository;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +72,7 @@ public class PostService {
     private final RedisTemplate<String, String> redisTemplate;
     private final PostLikeRepository postLikeRepository;
     private final ReportRepository reportRepository;
+    private final NotificationRepository notificationRepository;
 
     private static final String TOGGLE_LIKE_SCRIPT =
             "local added = redis.call('SADD', KEYS[1], ARGV[1]) " + "if added == 0 then "
@@ -115,6 +118,12 @@ public class PostService {
                             .build())
                     .toList();
             commentMentionRepository.saveAll(commentMentionList);
+
+            // 알림 목록 저장 (푸시 발송 여부와 관계없이 저장)
+            List<Notification> notifications = mentionedUsers.stream()
+                    .map(user -> Notification.mention(user, post.getId(), post.getTitle(), commenter.getNickName()))
+                    .toList();
+            notificationRepository.saveAll(notifications);
 
             // 푸시 알람을 위한 Event 생성
             eventPublisher.publishEvent(new CommentCreatedEvent(this, post, commenter, newComment, mentionIds));
