@@ -1,5 +1,8 @@
 package com.capstone.arfly.notification.domain;
 
 public enum NotificationType {
-    COMMENT,MENTION,MEDICATION
+    COMMENT,
+    MENTION,
+    MEDICATION,
+    JETSON_ALERT
 }
