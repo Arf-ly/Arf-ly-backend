@@ -57,7 +57,8 @@ public enum ErrorCode {
     WALK_NOT_FOUND(HttpStatus.NOT_FOUND, "산책 기록을 찾을 수 없습니다.", "WALK_NOT_FOUND"),
     TERMS_NOT_AGREED(HttpStatus.FORBIDDEN, "필수 약관 동의가 필요합니다.", "TERMS_NOT_AGREED"),
 
-    INVALID_JETSON_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 젯슨 기기 토큰입니다.", "INVALID_JETSON_TOKEN");
+    INVALID_JETSON_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 젯슨 기기 토큰입니다.", "INVALID_JETSON_TOKEN"),
+    JETSON_ALERT_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이상 징후 저장 중 오류가 발생했습니다.", "JETSON_ALERT_SAVE_FAILED");
 
     // 예외 상태 코드
     private final HttpStatus httpStatus;

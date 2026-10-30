@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// 젯슨 나노 젯슨 기기 (피코 산책 기기 IoTDevice와 별개)
+// 젯슨 나노 기기 (피코 산책 기기 IoTDevice와 별개)
 @Entity
 @Getter
 @Builder
@@ -41,4 +41,8 @@ public class JetsonDevice extends BaseTimeEntity {
     private String tokenHash;
 
     private LocalDateTime lastSeenAt;
+
+    public void updateLastSeenAt(LocalDateTime lastSeenAt) {
+        this.lastSeenAt = lastSeenAt;
+    }
 }
