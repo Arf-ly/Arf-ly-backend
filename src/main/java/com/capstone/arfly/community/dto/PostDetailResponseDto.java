@@ -1,6 +1,7 @@
 package com.capstone.arfly.community.dto;
 
 import com.capstone.arfly.community.domain.Post;
+import com.capstone.arfly.member.domain.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,9 @@ public class PostDetailResponseDto {
 
     @Schema(description = "작성자 닉네임", example = "유저123")
     private String authorNickname;
+
+    @Schema(description = "작성자 수의사 여부 (true면 프론트에서 수의사 뱃지 표시)", example = "false")
+    private Boolean authorDoctor;
 
     @Schema(description = "제목", example = "게시글 제목입니다.")
     private String title;
@@ -39,13 +43,20 @@ public class PostDetailResponseDto {
     @Schema(description = "해당 게시물이 나의 게시물인지(true: 나의 게시물/ false: 타인의 게시물 ")
     private Boolean mine;
 
-
-    public static PostDetailResponseDto makePostDetailResponse(Post post, List<CommentDetailResponseDto>
-            comments, List<FileDto> files, Long userId) {
+    public static PostDetailResponseDto makePostDetailResponse(
+            Post post, List<CommentDetailResponseDto> comments, List<FileDto> files, Long userId) {
         Boolean mine = post.getMember().getId() == userId ? true : false;
         return PostDetailResponseDto.builder()
-                .id(post.getId()).authorNickname(post.getMember().getNickName()
-                ).title(post.getTitle()).content(post.getContent()).likeCount(post.getLikeCount())
-                .createdAt(post.getCreatedAt()).images(files).comments(comments).mine(mine).build();
+                .id(post.getId())
+                .authorNickname(post.getMember().getNickName())
+                .authorDoctor(post.getMember().getRole() == Role.DOCTOR)
+                .title(post.getTitle())
+                .content(post.getContent())
+                .likeCount(post.getLikeCount())
+                .createdAt(post.getCreatedAt())
+                .images(files)
+                .comments(comments)
+                .mine(mine)
+                .build();
     }
 }

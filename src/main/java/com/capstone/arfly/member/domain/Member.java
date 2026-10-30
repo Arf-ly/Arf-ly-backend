@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @NoArgsConstructor
@@ -53,20 +54,32 @@ public class Member {
     @Column(nullable = false)
     private double longitude = 128.757416;
 
-    //null = false;
+    // null = false;
     private String road_address;
 
     @Builder.Default
     private boolean notificationEnabled = true;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(nullable = false)
+    @ColumnDefault("'ACTIVE'")
+    private MemberStatus status = MemberStatus.ACTIVE;
+
+    public void changeRole(Role role) {
+        this.role = role;
+    }
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+    }
 
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
 
-
-    public void updateProfile(String nickName, Double latitude, Double longitude, String roadAddress,
-                              boolean notificationEnabled) {
+    public void updateProfile(
+            String nickName, Double latitude, Double longitude, String roadAddress, boolean notificationEnabled) {
         if (nickName != null) {
             this.nickName = nickName;
         }
