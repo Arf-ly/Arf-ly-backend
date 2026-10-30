@@ -5,6 +5,7 @@ import com.capstone.arfly.common.exception.EmptyTokenException;
 import com.capstone.arfly.common.exception.InvalidHeaderException;
 import com.capstone.arfly.common.exception.InvalidTokenException;
 import com.capstone.arfly.common.exception.TokenExpiredException;
+import com.capstone.arfly.jetson.auth.JetsonDeviceTokenFilter;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -39,6 +40,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     public JwtTokenFilter(@Value("${jwt.access-secret}") String accessSecretKey) {
         this.ACCESS_SECRET_KEY = Keys.hmacShaKeyFor(Base64.getDecoder().decode(accessSecretKey));
+    }
+
+    // 젯슨 기기 요청은 JWT가 아닌 기기 토큰을 쓰므로 JetsonDeviceTokenFilter에서 인증
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return JetsonDeviceTokenFilter.isDeviceRequest(request);
     }
 
     @Override

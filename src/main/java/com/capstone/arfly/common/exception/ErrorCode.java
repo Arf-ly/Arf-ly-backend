@@ -55,7 +55,9 @@ public enum ErrorCode {
     INVALID_SENSOR_DATA(HttpStatus.BAD_REQUEST, "수신된 센서 데이터 형식이 올바르지 않거나 비어 있습니다.", "INVALID_SENSOR_DATA"),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당하는 진단 리포트가 없습니다.", "REPORT_NOT_FOUND"),
     WALK_NOT_FOUND(HttpStatus.NOT_FOUND, "산책 기록을 찾을 수 없습니다.", "WALK_NOT_FOUND"),
-    TERMS_NOT_AGREED(HttpStatus.FORBIDDEN, "필수 약관 동의가 필요합니다.", "TERMS_NOT_AGREED");
+    TERMS_NOT_AGREED(HttpStatus.FORBIDDEN, "필수 약관 동의가 필요합니다.", "TERMS_NOT_AGREED"),
+
+    INVALID_JETSON_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 젯슨 기기 토큰입니다.", "INVALID_JETSON_TOKEN");
 
     // 예외 상태 코드
     private final HttpStatus httpStatus;
