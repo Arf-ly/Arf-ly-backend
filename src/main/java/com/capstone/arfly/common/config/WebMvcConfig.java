@@ -22,7 +22,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/terms/latest",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "/swagger-ui.html"
-                );
+                        "/swagger-ui.html",
+                        "/api/jetson-device/**");
     }
 }

@@ -4,6 +4,7 @@ public enum S3DIRNAME {
     POST_IMAGE("PostImage"),
     AD_IMAGE("AdImage"),
     DIAGNOSIS_IMAGE("DiagnosisImage"),
+    JETSON_ALERT_IMAGE("JetsonAlertImage"),
     DOCTOR_LICENSE("DoctorLicense");
 
     private final String dirName;

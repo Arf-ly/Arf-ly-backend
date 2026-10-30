@@ -1,6 +1,8 @@
 package com.capstone.arfly.common.config;
 
 import com.capstone.arfly.common.auth.JwtTokenFilter;
+import com.capstone.arfly.jetson.auth.JetsonDeviceTokenFilter;
+import com.capstone.arfly.jetson.repository.JetsonDeviceRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,11 +17,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
+    private final JetsonDeviceRepository jetsonDeviceRepository;
+    private final JsonMapper jsonMapper;
 
     // 비밀번호 암호화 싱글톤 객체 생성
     @Bean
@@ -64,11 +69,16 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/prometheus")
                         .permitAll()
+                        .requestMatchers("/api/jetson-device/**")
+                        .hasRole("JETSON")
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
                         .anyRequest()
                         .authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        new JetsonDeviceTokenFilter(jetsonDeviceRepository, jsonMapper),
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
