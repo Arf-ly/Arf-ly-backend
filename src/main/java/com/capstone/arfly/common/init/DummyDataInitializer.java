@@ -14,6 +14,7 @@ import com.capstone.arfly.community.repository.PostImageRepository;
 import com.capstone.arfly.community.repository.PostLikeRepository;
 import com.capstone.arfly.community.repository.PostRepository;
 import com.capstone.arfly.member.domain.Member;
+import com.capstone.arfly.member.domain.MemberStatus;
 import com.capstone.arfly.member.domain.Role;
 import com.capstone.arfly.member.domain.Terms;
 import com.capstone.arfly.member.domain.UserTermsAgreement;
@@ -248,6 +249,7 @@ public class DummyDataInitializer implements CommandLineRunner {
     public void run(String... args) {
         if (termsRepository.count() > 0) {
             log.info("더미 데이터가 이미 존재합니다. 초기화를 건너뜁니다.");
+            createSuspendedTestAccount();
             return;
         }
 
@@ -261,19 +263,47 @@ public class DummyDataInitializer implements CommandLineRunner {
         createPostLikes(members, posts);
         createComments(members, posts);
         createMentionComments(members, posts);
+        createSuspendedTestAccount();
 
         log.info("더미 데이터 초기화 완료.");
+    }
+
+    // 정지 회원 테스트 계정 생성 (이미 있으면 건너뜀)
+    private void createSuspendedTestAccount() {
+        String loginId = "banned1234";
+        if (memberRepository.findByUserId(loginId).isPresent()) {
+            return;
+        }
+
+        Member member = memberRepository.save(Member.builder()
+                .userId(loginId)
+                .password(passwordEncoder.encode(loginId))
+                .nickName("arfly_banned")
+                .role(Role.USER)
+                .status(MemberStatus.SUSPENDED)
+                .build());
+
+        // 토큰 재발급 시 약관 동의 여부를 확인하므로 최신 약관에 모두 동의 처리
+        userTermsAgreementRepository.saveAll(termsRepository.findByLatestTrue().stream()
+                .map(terms -> UserTermsAgreement.builder()
+                        .member(member)
+                        .terms(terms)
+                        .agreement(true)
+                        .build())
+                .toList());
+
+        log.info("정지 회원 테스트 계정 생성 완료: {}", loginId);
     }
 
     private List<File> createDummyImageFiles() {
         List<File> files = new ArrayList<>(DUMMY_IMAGE_KEYS.length);
         for (String key : DUMMY_IMAGE_KEYS) {
             files.add(File.builder()
-                .fileName(key.substring(key.lastIndexOf('/') + 1))
-                .fileKey(key)
-                .fileSize(300_000L)
-                .fileType(FileType.IMAGE)
-                .build());
+                    .fileName(key.substring(key.lastIndexOf('/') + 1))
+                    .fileKey(key)
+                    .fileSize(300_000L)
+                    .fileType(FileType.IMAGE)
+                    .build());
         }
         fileRepository.saveAll(files);
         log.info("더미 이미지 파일 {}개 생성 완료", files.size());
@@ -284,8 +314,9 @@ public class DummyDataInitializer implements CommandLineRunner {
         List<Terms> list = new ArrayList<>();
 
         list.add(Terms.builder()
-            .title("서비스 이용약관")
-            .content("""
+                .title("서비스 이용약관")
+                .content(
+                        """
                 제1조(목적)
                 이 약관은 Arfly 서비스 운영 팀(이하 "운영자")가 운영하는 서비스(이하 "서비스")의 이용과 관련하여, 운영자와 회원 사이의 권리·의무 및 책임사항, 서비스 이용절차 등 필요한 사항을 정하는 것을 목적으로 합니다.
 
@@ -315,15 +346,16 @@ public class DummyDataInitializer implements CommandLineRunner {
                 제7조(커뮤니티 이용 규칙)
                 사용자가 커뮤니티에 등록한 게시물(사진, 글 등)의 저작권은 사용자에게 있습니다. 단, 타인의 명예를 훼손하거나, 불법적인 내용을 포함하거나, 서비스 운영 정책에 위배되는 게시물은 사전 통보 없이 삭제 또는 블라인드 처리될 수 있습니다.
                 """)
-            .version("1.0")
-            .latest(true)
-            .required(true)
-            .orderIndex(1)
-            .build());
+                .version("1.0")
+                .latest(true)
+                .required(true)
+                .orderIndex(1)
+                .build());
 
         list.add(Terms.builder()
-            .title("개인정보 처리방침")
-            .content("""
+                .title("개인정보 처리방침")
+                .content(
+                        """
                 개인정보 수집 및 이용 동의
 
                 Arf-ly는 회원가입 및 서비스 제공을 위하여 아래와 같이 개인정보를 수집·이용합니다.
@@ -355,15 +387,16 @@ public class DummyDataInitializer implements CommandLineRunner {
                 이용자는 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있습니다.
                 다만, 필수 항목에 대한 동의를 거부할 경우 회원가입 및 서비스 이용이 제한될 수 있습니다.
                 """)
-            .version("1.0")
-            .latest(true)
-            .required(true)
-            .orderIndex(2)
-            .build());
+                .version("1.0")
+                .latest(true)
+                .required(true)
+                .orderIndex(2)
+                .build());
 
         list.add(Terms.builder()
-            .title("AI 진단 결과는 의료행위가 아님에 동의")
-            .content("""
+                .title("AI 진단 결과는 의료행위가 아님에 동의")
+                .content(
+                        """
                 Arfly에서 제공하는 AI 분석 결과는 반려동물의 피부 상태에 대한 참고용 정보일 뿐,
                 수의학적 진단이나 치료를 대체하지 않습니다.
 
@@ -373,15 +406,16 @@ public class DummyDataInitializer implements CommandLineRunner {
                 회사는 AI 분석 결과의 정확성, 신뢰성, 완전성을 보장하지 않으며,
                 해당 결과를 이용함으로써 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다.
                 """)
-            .version("1.0")
-            .latest(true)
-            .required(true)
-            .orderIndex(3)
-            .build());
+                .version("1.0")
+                .latest(true)
+                .required(true)
+                .orderIndex(3)
+                .build());
 
         list.add(Terms.builder()
-            .title("푸시 알림 수신 동의")
-            .content("""
+                .title("푸시 알림 수신 동의")
+                .content(
+                        """
                 회원은 Arfly 서비스 이용과 관련하여 다음과 같은 안내를 푸시 알림, 앱 내 알림, 문자 또는 이메일 등의 방법으로 받을 수 있습니다.
 
                 1. 계정 및 회원가입 관련 안내
@@ -390,27 +424,29 @@ public class DummyDataInitializer implements CommandLineRunner {
                 2. 일정 및 맞춤 알림 관련 안내
                 • 회원이 직접 설정한 복약 알림, 케어 일정, 반복 알림, 리마인드 알림
                 """)
-            .version("1.0")
-            .latest(true)
-            .required(false)
-            .orderIndex(4)
-            .build());
+                .version("1.0")
+                .latest(true)
+                .required(false)
+                .orderIndex(4)
+                .build());
 
         list.add(Terms.builder()
-            .title("야간 알림 수신 동의")
-            .content("""
+                .title("야간 알림 수신 동의")
+                .content(
+                        """
                 관련 법령에 따라 야간 시간대(21:00 ~ 익일 08:00)에 광고성 알림을 전송하기 위해서는 별도의 동의가 필요합니다.
                 주의: 반려동물의 생체 신호 이상 등 긴급 건강 알림은 야간 동의 여부와 관계없이 전송될 수 있습니다.
                 """)
-            .version("1.0")
-            .latest(true)
-            .required(false)
-            .orderIndex(5)
-            .build());
+                .version("1.0")
+                .latest(true)
+                .required(false)
+                .orderIndex(5)
+                .build());
 
         list.add(Terms.builder()
-            .title("AI 기능 개선을 위한 데이터 활용 동의")
-            .content("""
+                .title("AI 기능 개선을 위한 데이터 활용 동의")
+                .content(
+                        """
                 운영자는 회원이 서비스에 업로드하거나 입력한 반려동물 사진 및 관련 정보를 활용하여 서비스 품질 개선 및 AI 기능 향상을 위한 연구·개선 작업을 수행할 수 있습니다.
 
                 1. 활용 대상 정보
@@ -427,20 +463,20 @@ public class DummyDataInitializer implements CommandLineRunner {
                 3. 철회
                 • 회원은 언제든지 해당 동의를 철회할 수 있습니다.
                 """)
-            .version("1.0")
-            .latest(true)
-            .required(false)
-            .orderIndex(6)
-            .build());
+                .version("1.0")
+                .latest(true)
+                .required(false)
+                .orderIndex(6)
+                .build());
 
         list.add(Terms.builder()
-            .title("마케팅 수신 동의")
-            .content("Arfly 서비스의 마케팅 정보 및 이벤트 안내를 푸시 알림, 이메일 등의 방법으로 수신하는 것에 동의합니다.")
-            .version("1.0")
-            .latest(true)
-            .required(false)
-            .orderIndex(7)
-            .build());
+                .title("마케팅 수신 동의")
+                .content("Arfly 서비스의 마케팅 정보 및 이벤트 안내를 푸시 알림, 이메일 등의 방법으로 수신하는 것에 동의합니다.")
+                .version("1.0")
+                .latest(true)
+                .required(false)
+                .orderIndex(7)
+                .build());
 
         termsRepository.saveAll(list);
         log.info("약관 {}개 생성 완료", list.size());
@@ -456,15 +492,15 @@ public class DummyDataInitializer implements CommandLineRunner {
             double lngOffset = (random.nextDouble() - 0.5) * 0.1;
 
             members.add(Member.builder()
-                .userId("dummy_user_" + String.format("%03d", i + 1))
-                .password(encodedPassword)
-                .nickName(MEMBER_NICKNAMES[i])
-                .phoneNumber("010" + String.format("%04d", 1000 + i) + String.format("%04d", 2000 + i))
-                .role(Role.USER)
-                .latitude(BASE_LAT + latOffset)
-                .longitude(BASE_LNG + lngOffset)
-                .notificationEnabled(true)
-                .build());
+                    .userId("dummy_user_" + String.format("%03d", i + 1))
+                    .password(encodedPassword)
+                    .nickName(MEMBER_NICKNAMES[i])
+                    .phoneNumber("010" + String.format("%04d", 1000 + i) + String.format("%04d", 2000 + i))
+                    .role(Role.USER)
+                    .latitude(BASE_LAT + latOffset)
+                    .longitude(BASE_LNG + lngOffset)
+                    .notificationEnabled(true)
+                    .build());
         }
         memberRepository.saveAll(members);
 
@@ -473,10 +509,10 @@ public class DummyDataInitializer implements CommandLineRunner {
         for (Member member : members) {
             for (Terms terms : termsList) {
                 agreements.add(UserTermsAgreement.builder()
-                    .member(member)
-                    .terms(terms)
-                    .agreement(terms.getRequired() || random.nextBoolean())
-                    .build());
+                        .member(member)
+                        .terms(terms)
+                        .agreement(terms.getRequired() || random.nextBoolean())
+                        .build());
             }
         }
         userTermsAgreementRepository.saveAll(agreements);
@@ -486,15 +522,14 @@ public class DummyDataInitializer implements CommandLineRunner {
         List<FcmToken> fcmTokens = new ArrayList<>();
         for (Member member : members) {
             fcmTokens.add(FcmToken.builder()
-                .member(member)
-                .token("fake-fcm-" + UUID.randomUUID())
-                .deviceType(deviceTypes[random.nextInt(deviceTypes.length)])
-                .build());
+                    .member(member)
+                    .token("fake-fcm-" + UUID.randomUUID())
+                    .deviceType(deviceTypes[random.nextInt(deviceTypes.length)])
+                    .build());
         }
         fcmTokenRepository.saveAll(fcmTokens);
 
-        log.info("멤버 {}명, 약관 동의 {}개, FCM 토큰 {}개 생성 완료",
-            members.size(), agreements.size(), fcmTokens.size());
+        log.info("멤버 {}명, 약관 동의 {}개, FCM 토큰 {}개 생성 완료", members.size(), agreements.size(), fcmTokens.size());
         return members;
     }
 
@@ -518,16 +553,16 @@ public class DummyDataInitializer implements CommandLineRunner {
                 Breeds breed = breedPool.get(random.nextInt(breedPool.size()));
 
                 pets.add(Pet.builder()
-                    .member(member)
-                    .breeds(breed)
-                    .profileImage(petIndex < 5 ? dummyImages.get(petIndex) : null)
-                    .name(PET_NAMES[random.nextInt(PET_NAMES.length)])
-                    .species(species)
-                    .sex(sexValues[random.nextInt(sexValues.length)])
-                    .neutered(random.nextBoolean())
-                    .birth(2016 + random.nextInt(9))
-                    .weight(Math.round((1.0 + random.nextDouble() * 29.0) * 10.0) / 10.0)
-                    .build());
+                        .member(member)
+                        .breeds(breed)
+                        .profileImage(petIndex < 5 ? dummyImages.get(petIndex) : null)
+                        .name(PET_NAMES[random.nextInt(PET_NAMES.length)])
+                        .species(species)
+                        .sex(sexValues[random.nextInt(sexValues.length)])
+                        .neutered(random.nextBoolean())
+                        .birth(2016 + random.nextInt(9))
+                        .weight(Math.round((1.0 + random.nextDouble() * 29.0) * 10.0) / 10.0)
+                        .build());
                 petIndex++;
             }
         }
@@ -542,10 +577,7 @@ public class DummyDataInitializer implements CommandLineRunner {
                 chosen.add(ALLERGIES[random.nextInt(ALLERGIES.length)]);
             }
             for (String allergyName : chosen) {
-                allergies.add(PetAllergy.builder()
-                    .pet(pet)
-                    .name(allergyName)
-                    .build());
+                allergies.add(PetAllergy.builder().pet(pet).name(allergyName).build());
             }
         }
         petAllergyRepository.saveAll(allergies);
@@ -559,10 +591,10 @@ public class DummyDataInitializer implements CommandLineRunner {
         for (int i = 0; i < 100; i++) {
             Member member = members.get(random.nextInt(members.size()));
             posts.add(Post.builder()
-                .member(member)
-                .title(POST_TITLES[i % POST_TITLES.length])
-                .content(POST_CONTENTS[random.nextInt(POST_CONTENTS.length)])
-                .build());
+                    .member(member)
+                    .title(POST_TITLES[i % POST_TITLES.length])
+                    .content(POST_CONTENTS[random.nextInt(POST_CONTENTS.length)])
+                    .build());
         }
         postRepository.saveAll(posts);
 
@@ -571,10 +603,10 @@ public class DummyDataInitializer implements CommandLineRunner {
         List<PostImage> postImages = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             postImages.add(PostImage.builder()
-                .post(topPost)
-                .file(dummyImages.get(5 + i))
-                .orderIndex(i + 1)
-                .build());
+                    .post(topPost)
+                    .file(dummyImages.get(5 + i))
+                    .orderIndex(i + 1)
+                    .build());
         }
         postImageRepository.saveAll(postImages);
 
@@ -598,33 +630,26 @@ public class DummyDataInitializer implements CommandLineRunner {
             String pair = member.getId() + "-" + post.getId();
 
             if (usedPairs.add(pair)) {
-                likes.add(PostLike.builder()
-                    .member(member)
-                    .post(post)
-                    .build());
+                likes.add(PostLike.builder().member(member).post(post).build());
                 likeCountMap.merge(post.getId(), 1, Integer::sum);
-                likeUsersMap.computeIfAbsent(post.getId(), k -> new HashSet<>())
-                    .add(String.valueOf(member.getId()));
+                likeUsersMap.computeIfAbsent(post.getId(), k -> new HashSet<>()).add(String.valueOf(member.getId()));
             }
         }
         postLikeRepository.saveAll(likes);
 
         // DB likeCount 동기화
         entityManager.flush();
-        likeCountMap.forEach((postId, count) ->
-            entityManager.createQuery("UPDATE Post p SET p.likeCount = :count WHERE p.id = :id")
+        likeCountMap.forEach((postId, count) -> entityManager
+                .createQuery("UPDATE Post p SET p.likeCount = :count WHERE p.id = :id")
                 .setParameter("count", count)
                 .setParameter("id", postId)
-                .executeUpdate()
-        );
+                .executeUpdate());
 
         // Redis likeCount 및 유저 Set 동기화
-        likeCountMap.forEach((postId, count) ->
-            redisTemplate.opsForValue().set("post:like:" + postId, String.valueOf(count))
-        );
+        likeCountMap.forEach(
+                (postId, count) -> redisTemplate.opsForValue().set("post:like:" + postId, String.valueOf(count)));
         likeUsersMap.forEach((postId, userIds) ->
-            redisTemplate.opsForSet().add("post:like:users:" + postId, userIds.toArray(new String[0]))
-        );
+                redisTemplate.opsForSet().add("post:like:users:" + postId, userIds.toArray(new String[0])));
 
         log.info("게시글 좋아요 {}개 생성 완료", likes.size());
     }
@@ -636,10 +661,10 @@ public class DummyDataInitializer implements CommandLineRunner {
             for (int i = 0; i < count; i++) {
                 Member member = members.get(random.nextInt(members.size()));
                 comments.add(Comment.builder()
-                    .post(post)
-                    .member(member)
-                    .content(COMMENT_CONTENTS[random.nextInt(COMMENT_CONTENTS.length)])
-                    .build());
+                        .post(post)
+                        .member(member)
+                        .content(COMMENT_CONTENTS[random.nextInt(COMMENT_CONTENTS.length)])
+                        .build());
             }
         }
         commentRepository.saveAll(comments);
@@ -664,10 +689,10 @@ public class DummyDataInitializer implements CommandLineRunner {
             String content = template.replace("{mention}", mentionTag);
 
             Comment comment = Comment.builder()
-                .post(post)
-                .member(commenter)
-                .content(content)
-                .build();
+                    .post(post)
+                    .member(commenter)
+                    .content(content)
+                    .build();
             comments.add(comment);
         }
         commentRepository.saveAll(comments);
@@ -681,18 +706,15 @@ public class DummyDataInitializer implements CommandLineRunner {
             Long mentionedId = Long.parseLong(content.substring(userIdStart, userIdEnd));
 
             members.stream()
-                .filter(m -> m.getId().equals(mentionedId))
-                .findFirst()
-                .ifPresent(mentionedUser ->
-                    mentions.add(CommentMention.builder()
-                        .comment(comment)
-                        .mentionedUser(mentionedUser)
-                        .build())
-                );
+                    .filter(m -> m.getId().equals(mentionedId))
+                    .findFirst()
+                    .ifPresent(mentionedUser -> mentions.add(CommentMention.builder()
+                            .comment(comment)
+                            .mentionedUser(mentionedUser)
+                            .build()));
         }
         commentMentionRepository.saveAll(mentions);
 
         log.info("맨션 댓글 {}개, CommentMention {}개 생성 완료", comments.size(), mentions.size());
     }
-
 }
